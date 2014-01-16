@@ -21,9 +21,6 @@ Hamiltonian::Hamiltonian(int lSys,
 		  0., h;
 };
 
-void Hamiltonian::modifyParams(int trial)
-{};
-
 MatrixXd Hamiltonian::blockSiteJoin(const std::vector<MatrixXd>& rhoBasisH2) const
 {
 	return j * kp(rhoBasisSigmax, sigmax);
