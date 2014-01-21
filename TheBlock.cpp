@@ -17,7 +17,7 @@ TheBlock::TheBlock(const Hamiltonian& ham, int mMaxIn) : hS(ham.h1), m(d)
 };
 
 TheBlock TheBlock::nextBlock(const Hamiltonian& ham, bool infiniteStage,
-							 TheBlock& compBlock)
+							 const TheBlock& compBlock)
 {
     MatrixXd hSprime = kp(hS, Id_d)
                        + ham.blockSiteJoin(rhoBasisH2)
@@ -57,6 +57,7 @@ TheBlock TheBlock::nextBlock(const Hamiltonian& ham, bool infiniteStage,
 };
 
 std::pair<Eigen::MatrixXd, int> TheBlock::createHSuperFinal(const Hamiltonian& ham)
+    const
 {
     return std::make_pair(MatrixXd(kp(hS, Id(d * m * d))
 								   + kp(ham.blockSiteJoin(rhoBasisH2), Id(m * d))
@@ -68,7 +69,7 @@ std::pair<Eigen::MatrixXd, int> TheBlock::createHSuperFinal(const Hamiltonian& h
 								   m);
 };
 
-MatrixXd TheBlock::changeBasis(const MatrixXd& mat)
+MatrixXd TheBlock::changeBasis(const MatrixXd& mat) const
 {
 	return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
 };

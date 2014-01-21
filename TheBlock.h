@@ -10,9 +10,10 @@ class TheBlock
 					= std::vector<Eigen::MatrixXd>());
 		TheBlock(const Hamiltonian& ham, int mMax);
 		TheBlock nextBlock(const Hamiltonian& ham, bool infiniteStage,
-						   TheBlock& compBlock);	// performs each DMRG step
+						   const TheBlock& compBlock);	// performs each DMRG step
 			// - the third argument is the environment block in the fDMRG stage
-		std::pair<Eigen::MatrixXd, int> createHSuperFinal(const Hamiltonian& ham);
+		std::pair<Eigen::MatrixXd, int> createHSuperFinal(const Hamiltonian& ham)
+            const;
 
 	private:
 		Eigen::MatrixXd hS;								// block Hamiltonian
@@ -22,7 +23,7 @@ class TheBlock
 		static int mMax;				// max size of effective Hamiltonian
 		Eigen::MatrixXd primeToRhoBasis;			// change-of-basis matrix
 
-		Eigen::MatrixXd changeBasis(const Eigen::MatrixXd& mat);
+		Eigen::MatrixXd changeBasis(const Eigen::MatrixXd& mat) const;
 				// represents operators in the basis of the new system block
 
 	friend class EffectiveHamiltonian;
