@@ -10,8 +10,7 @@ class TheBlock
 					= std::vector<Eigen::MatrixXd>());
 		TheBlock(const Hamiltonian& ham, int mMax);
 		TheBlock nextBlock(const Hamiltonian& ham, bool infiniteStage,
-						   const TheBlock& compBlock);	// performs each DMRG step
-			// - the third argument is the environment block in the fDMRG stage
+						   const TheBlock& compBlock); // performs each DMRG step
 		std::pair<Eigen::MatrixXd, int> createHSuperFinal(const Hamiltonian& ham)
             const;
 
@@ -21,10 +20,14 @@ class TheBlock
 									// density-matrix-basis coupling operators
 		int m;								// number of states stored in block
 		static int mMax;				// max size of effective Hamiltonian
-		Eigen::MatrixXd primeToRhoBasis;			// change-of-basis matrix
+        static double lancTolerance;
+        Eigen::MatrixXd primeToRhoBasis;			// change-of-basis matrix
 
 		Eigen::MatrixXd changeBasis(const Eigen::MatrixXd& mat) const;
 				// represents operators in the basis of the new system block
 
+    friend void halfSweep(std::vector<TheBlock>& blocks, int start,
+                          const Hamiltonian& ham, bool infiniteStage,
+                          double lancTolerance);
 	friend class EffectiveHamiltonian;
 };

@@ -7,8 +7,6 @@
 #include "EffectiveHamiltonian.h"
 #include "FreeFunctions.h"
 
-int TheBlock::mMax;							// declare static variables
-
 using namespace Eigen;
 
 int main()
@@ -24,6 +22,7 @@ int main()
 	oneSiteConsts.push_back(1.);			// h
 	int mMax = 12,						    // max number of stored states
 		nSweeps = 1;						// number of sweeps to be performed
+    double lancTolerance = 1e-6;     // acceptable error in ground state vector
 
 	bool energyOnly = false,
 		// calculate observables? (if true, rest of this section irrelevant)
@@ -62,26 +61,26 @@ int main()
 	{
 		std::cout << "Trial " << trial << ":" <<std::endl;
 		fileout << "Trial " << trial << ":" <<std::endl;
-		modifyHamParams(trial);
+//		modifyHamParams(trial);
 		int lSFinal = ham.lSys / 2 - 1;		// final length of the system block
 		std::vector<TheBlock> blocks(ham.lSys - 3);		// initialize system
 		blocks[0] = TheBlock(ham, mMax);	// initialize the one-site block
 		std::cout << "Performing iDMRG...\n";
-		halfSweep(blocks, 0, ham, true);			// perform the iDMRG steps
+		halfSweep(blocks, 0, ham, true, lancTolerance);	// perform the iDMRG steps
         if(nSweeps != 0)
             std::cout << "Performing fDMRG...\n";
 		for(int i = 1; i <= nSweeps; i++)			// perform the fDMRG sweeps
 		{
-			halfSweep(blocks, lSFinal - 1, ham, false);
-			halfSweep(blocks, 0, ham, false);
+			halfSweep(blocks, lSFinal - 1, ham, false, lancTolerance);
+			halfSweep(blocks, 0, ham, false, lancTolerance);
 			std::cout << "Sweep " << i << " complete." << std::endl;
 		};
 
-		EffectiveHamiltonian hSuperFinal(blocks[lSFinal - 1].createHSuperFinal(ham));
-											// calculate ground-state energy
+		EffectiveHamiltonian hSuperFinal(blocks[lSFinal - 1].createHSuperFinal(ham),
+                                         lancTolerance);
+                                               // calculate ground-state energy
 		fileout << "Ground state energy density = "
-				<< hSuperFinal.gsEnergy(energyOnly) / ham.lSys << std::endl
-				<< std::endl;
+				<< hSuperFinal.gsEnergy / ham.lSys << std::endl	<< std::endl;
 		if(!energyOnly)
 		{
 			std::cout << "Calculating observables..." << std::endl;

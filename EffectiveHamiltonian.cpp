@@ -3,23 +3,18 @@
 #include "Hamiltonian.h"
 #include "TheBlock.h"
 #include "EffectiveHamiltonian.h"
+#include "Lanczos.h"
 
 using namespace Eigen;
 
-EffectiveHamiltonian::EffectiveHamiltonian(const std::pair<MatrixXd, int>& hSuperFinal)
-    : mSFinal(hSuperFinal.second), hSuper(hSuperFinal.first),
-      hSuperSolver(SelfAdjointEigenSolver<MatrixXd>(mSFinal * d * mSFinal * d)) {};
-
-double EffectiveHamiltonian::gsEnergy(bool only)
+EffectiveHamiltonian::EffectiveHamiltonian(const std::pair<MatrixXd, int>&
+                                           hSuperFinal, double lancTolerance)
+    : mSFinal(hSuperFinal.second)
 {
-	if(only)
-		hSuperSolver.compute(hSuper, EigenvaluesOnly);
-	else
-	{
-		hSuperSolver.compute(hSuper);
-		psiGround = hSuperSolver.eigenvectors().col(0);
-	};
-	return hSuperSolver.eigenvalues()(0);
+    std::pair<VectorXd, double> GSInfo = lanczos(hSuperFinal.first,
+                                                 lancTolerance);
+    psiGround = GSInfo.first;
+    gsEnergy = GSInfo.second;
 };
 
 double EffectiveHamiltonian::expValue(const opsVec& ops,

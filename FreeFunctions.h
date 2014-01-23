@@ -1,5 +1,5 @@
-void halfSweep(std::vector<TheBlock>& blocks, int start,
-			   const Hamiltonian& ham, bool infiniteStage);
+void halfSweep(std::vector<TheBlock>& blocks, int start, const Hamiltonian& ham,
+               bool infiniteStage, double lancTolerance);
 												// perform half of a DMRG sweep
 void oneSiteExpValues(const MatrixDd& oneSiteOp, int rangeOfObservables,
 					  int currentLSys, EffectiveHamiltonian& hSuperFinal,

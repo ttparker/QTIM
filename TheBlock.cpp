@@ -2,8 +2,12 @@
 #include "main.h"
 #include "Hamiltonian.h"
 #include "TheBlock.h"
+#include "Lanczos.h"
 
 using namespace Eigen;
+
+int TheBlock::mMax;
+double TheBlock::lancTolerance;
 
 TheBlock::TheBlock(int m, const MatrixXd& hS,
 				   const std::vector<MatrixXd>& rhoBasisH2)
@@ -33,17 +37,17 @@ TheBlock TheBlock::nextBlock(const Hamiltonian& ham, bool infiniteStage,
 			tempRhoBasisH2.push_back(kp(Id(m), *op));
 		return TheBlock(md, hSprime, tempRhoBasisH2);
 	};
-	SelfAdjointEigenSolver<MatrixXd> hSuperSolver(infiniteStage ?
-												// find superblock eigenstates
-												  MatrixXd(kp(hSprime, Id(md))
-												  + ham.siteSiteJoin(m, m)
-												  + kp(Id(md), hSprime)) :
-												  MatrixXd(kp(hSprime, Id(compBlock.m * d))
-								  			      + ham.siteSiteJoin(m, compBlock.m)
-												  + kp(Id(md * compBlock.m), ham.h1)
-											      + kp(Id(md), ham.blockSiteJoin(compBlock.rhoBasisH2))
-												  + kp(kp(Id(md), compBlock.hS), Id_d)));
-    rmMatrixXd psiGround = hSuperSolver.eigenvectors().col(0);	// ground state
+    rmMatrixXd psiGround = lanczos(infiniteStage ?
+                                   MatrixXd(kp(hSprime, Id(md))
+                                   + ham.siteSiteJoin(m, m)
+                                   + kp(Id(md), hSprime)) :
+                                   MatrixXd(kp(hSprime, Id(compBlock.m * d))
+                                   + ham.siteSiteJoin(m, compBlock.m)
+                                   + kp(Id(md * compBlock.m), ham.h1)
+                                   + kp(Id(md),
+                                        ham.blockSiteJoin(compBlock.rhoBasisH2))
+                                   + kp(kp(Id(md), compBlock.hS), Id_d)),
+                                   lancTolerance).first;	    // ground state
     psiGround.resize(md, (infiniteStage ? m : compBlock.m) * d);
     SelfAdjointEigenSolver<MatrixXd> rhoSolver(psiGround * psiGround.adjoint());
 											// find density matrix eigenstates
