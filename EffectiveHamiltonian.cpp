@@ -11,10 +11,10 @@ EffectiveHamiltonian::EffectiveHamiltonian(const std::pair<MatrixXd, int>&
                                            hSuperFinal, double lancTolerance)
     : mSFinal(hSuperFinal.second)
 {
-    std::pair<VectorXd, double> GSInfo = lanczos(hSuperFinal.first,
+    std::pair<VectorXd, double> gState = lanczos(hSuperFinal.first,
                                                  lancTolerance);
-    psiGround = GSInfo.first;
-    gsEnergy = GSInfo.second;
+    psiGround = gState.first;
+    gsEnergy = gState.second;
 };
 
 double EffectiveHamiltonian::expValue(const opsVec& ops,
