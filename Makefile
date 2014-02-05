@@ -5,7 +5,8 @@ LIBS = -llapack
 OBJS = EffectiveHamiltonian.o FreeFunctions.o Lanczos.o main.o modifyHamParams.o QTIM.o TheBlock.o
 COMMONHS = d.h main.h Hamiltonian.h
 light = rm -f *.cpp~ *.h~ Makefile~
-deep = rm -f $(PROG) *.o ./Output/*
+git = rm -f $(PROG) ./Output/*
+deep = $(git) *.o
 
 $(PROG): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LIBS) -o $(PROG) $(OBJS)
@@ -15,7 +16,6 @@ EffectiveHamiltonian.o: $(COMMONHS) TheBlock.h EffectiveHamiltonian.h Lanczos.h
 FreeFunctions.o: $(COMMONHS) TheBlock.h EffectiveHamiltonian.h
 
 Lanczos.o: d.h main.h
-	$(CXX) $(CXXFLAGS) $(LIBS) -c Lanczos.cpp
 
 main.o: $(COMMONHS) TheBlock.h EffectiveHamiltonian.h FreeFunctions.h
 
@@ -25,6 +25,9 @@ TheBlock.o: $(COMMONHS) TheBlock.h Lanczos.h
 
 lightclean:
 	$(light)
+
+gitclean:
+	$(git)
 
 deepclean:
 	$(deep)
