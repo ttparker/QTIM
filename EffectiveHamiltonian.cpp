@@ -8,8 +8,9 @@
 using namespace Eigen;
 
 EffectiveHamiltonian::EffectiveHamiltonian(const std::pair<MatrixXd, int>&
-                                           hSuperFinal, double lancTolerance)
-    : mSFinal(hSuperFinal.second)
+                                           hSuperFinal, double lancTolerance,
+                                           int skips)
+    : mSFinal(hSuperFinal.second), skips(skips)
 {
     std::pair<VectorXd, double> gState = lanczos(hSuperFinal.first,
                                                  lancTolerance);
@@ -134,7 +135,7 @@ MatrixXd EffectiveHamiltonian::rhoBasisRep(const opsMap& blockOps,
 											== currentOp -> first - 1 ?
 										 currentOp++ -> second :
 										 Id_d));
-		rhoBasisBlockOp = (currentSite -> m * d <= TheBlock::mMax ?
+		rhoBasisBlockOp = (currentSite - firstSite < skips ?
 						   primeBasisBlockOp :
 						   currentSite -> changeBasis(primeBasisBlockOp));
 	};

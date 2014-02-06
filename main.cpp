@@ -21,7 +21,7 @@ int main()
 	std::vector<double> oneSiteConsts;
 	oneSiteConsts.push_back(1.);			// h
 	int mMax = 16,						    // max number of stored states
-		nSweeps = 1;						// number of sweeps to be performed
+		nSweeps = 2;						// number of sweeps to be performed
     double lancTolerance = 1e-6;     // acceptable error in ground state vector
 
 	bool energyOnly = false,
@@ -80,14 +80,14 @@ int main()
 		{
             for(int site = lSFinal - 1, end = ham.lSys - 4 - skips; site < end; site++)
                 blocks[site + 1] = blocks[site].nextBlock(ham, false, false,
-                                                          blocks[end - site]);
+                                                          blocks[ham.lSys - 4 - site]);
             for(int site = skips, end = lSFinal - 1; site < end; site++)
                 blocks[site + 1] = blocks[site].nextBlock(ham, false, false,
                                                           blocks[ham.lSys - 4 - site]);
             std::cout << "Sweep " << i << " complete." << std::endl;
         };
         EffectiveHamiltonian hSuperFinal(blocks[lSFinal - 1].createHSuperFinal(ham),
-                                         lancTolerance);
+                                         lancTolerance, skips);
                                                // calculate ground-state energy
 		fileout << "Ground state energy density = "
 				<< hSuperFinal.gsEnergy / ham.lSys << std::endl	<< std::endl;

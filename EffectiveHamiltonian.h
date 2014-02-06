@@ -11,13 +11,14 @@ class EffectiveHamiltonian
         double gsEnergy;                         // returns ground-state energy
         
         EffectiveHamiltonian(const std::pair<Eigen::MatrixXd, int>& hSuperFinal,
-                             double lancTolerance);
+                             double lancTolerance, int skips);
         double expValue(const opsVec& ops, std::vector<TheBlock>& blocks);
         // calculates exectation value of a combination of single-site operators
 
     private:
-		int mSFinal;				// final number of states stored per block
         rmMatrixXd psiGround;				// final superblock ground state
+        int mSFinal,                // final number of states stored per block
+            skips;
         
         void placeOp(const std::pair<MatrixDd, int>& op, opsMap& blockSide,
                      bool reflect, int lSupFinal = 0);
