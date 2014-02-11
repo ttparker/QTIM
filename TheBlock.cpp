@@ -41,17 +41,17 @@ TheBlock TheBlock::nextBlock(const Hamiltonian& ham, bool exactDiag,
     int compmd = compBlock.m * d;
     VectorXd seed = VectorXd::Random(md * (infiniteStage ? md : compmd));
     seed /= seed.norm();
-    rmMatrixXd psiGround = lanczos(infiniteStage ?
-                                   MatrixXd(kp(hSprime, Id(md))
-                                   + ham.siteSiteJoin(m, m)
-                                   + kp(Id(md), hSprime)) :
-                                   MatrixXd(kp(hSprime, Id(compmd))
-                                   + ham.siteSiteJoin(m, compBlock.m)
-                                   + kp(Id(md * compBlock.m), ham.h1)
-                                   + kp(Id(md),
-                                        ham.blockSiteJoin(compBlock.rhoBasisH2))
-                                   + kp(kp(Id(md), compBlock.hS), Id_d)),
-                                   seed, lancTolerance).first;	// ground state
+    lanczos(infiniteStage ?
+            MatrixXd(kp(hSprime, Id(md))
+            + ham.siteSiteJoin(m, m)
+            + kp(Id(md), hSprime)) :
+            MatrixXd(kp(hSprime, Id(compmd))
+            + ham.siteSiteJoin(m, compBlock.m)
+            + kp(Id(md * compBlock.m), ham.h1)
+            + kp(Id(md), ham.blockSiteJoin(compBlock.rhoBasisH2))
+            + kp(kp(Id(md), compBlock.hS), Id_d)),
+            seed, lancTolerance);	                  // calculate ground state
+    rmMatrixXd psiGround = seed;
     psiGround.resize(md, infiniteStage ? md : compmd);
     SelfAdjointEigenSolver<MatrixXd> rhoSolver(psiGround * psiGround.adjoint());
 											// find density matrix eigenstates
