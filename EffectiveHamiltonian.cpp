@@ -12,7 +12,9 @@ EffectiveHamiltonian::EffectiveHamiltonian(const std::pair<MatrixXd, int>&
                                            int skips)
     : mSFinal(hSuperFinal.second), skips(skips)
 {
-    std::pair<VectorXd, double> gState = lanczos(hSuperFinal.first,
+    VectorXd seed = VectorXd::Random(mSFinal * d * mSFinal * d);
+    seed /= seed.norm();
+    std::pair<VectorXd, double> gState = lanczos(hSuperFinal.first, seed,
                                                  lancTolerance);
     psiGround = gState.first;
     gsEnergy = gState.second;

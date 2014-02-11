@@ -38,18 +38,21 @@ TheBlock TheBlock::nextBlock(const Hamiltonian& ham, bool exactDiag,
 			tempRhoBasisH2.push_back(kp(Id(m), *op));
 		return TheBlock(md, hSprime, tempRhoBasisH2);
 	};
+    int compmd = compBlock.m * d;
+    VectorXd seed = VectorXd::Random(md * (infiniteStage ? md : compmd));
+    seed /= seed.norm();
     rmMatrixXd psiGround = lanczos(infiniteStage ?
                                    MatrixXd(kp(hSprime, Id(md))
                                    + ham.siteSiteJoin(m, m)
                                    + kp(Id(md), hSprime)) :
-                                   MatrixXd(kp(hSprime, Id(compBlock.m * d))
+                                   MatrixXd(kp(hSprime, Id(compmd))
                                    + ham.siteSiteJoin(m, compBlock.m)
                                    + kp(Id(md * compBlock.m), ham.h1)
                                    + kp(Id(md),
                                         ham.blockSiteJoin(compBlock.rhoBasisH2))
                                    + kp(kp(Id(md), compBlock.hS), Id_d)),
-                                   lancTolerance).first;	    // ground state
-    psiGround.resize(md, (infiniteStage ? m : compBlock.m) * d);
+                                   seed, lancTolerance).first;	// ground state
+    psiGround.resize(md, infiniteStage ? md : compmd);
     SelfAdjointEigenSolver<MatrixXd> rhoSolver(psiGround * psiGround.adjoint());
 											// find density matrix eigenstates
 	primeToRhoBasis = rhoSolver.eigenvectors().rightCols(mMax);

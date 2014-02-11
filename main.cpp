@@ -15,7 +15,7 @@ int main()
 
 	// **************** begin modifiable parameters
 	const int numberOfTrials = 1;
-	int lSys = 12;							// system length - must be even
+	int lSys = 16;							// system length - must be even
 	std::vector<double> couplingConsts;
 	couplingConsts.push_back(-1.);			// J
 	std::vector<double> oneSiteConsts;
