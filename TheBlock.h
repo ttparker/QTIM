@@ -13,8 +13,10 @@ class TheBlock
 		TheBlock(const Hamiltonian& ham, int mMax);
 		TheBlock nextBlock(const Hamiltonian& ham, bool exactDiag = true,
                            bool infiniteStage = true,
-                           const TheBlock& compBlock = TheBlock());
+                           const TheBlock& compBlock = TheBlock(),
+                           const TheBlock& beforeCompBlock = TheBlock());
                                                      // performs each DMRG step
+        void reflectPredictedPsi();            // when you reach edge of system
 		std::pair<Eigen::MatrixXd, int> createHSuperFinal(const Hamiltonian& ham)
             const;
 
@@ -23,6 +25,9 @@ class TheBlock
 		std::vector<Eigen::MatrixXd> rhoBasisH2;
 									// density-matrix-basis coupling operators
 		int m;								// number of states stored in block
+		static rmMatrixXd psiGround;
+        static bool firstfDMRGStep;     // slight abuse of nomeclature
+                                        //    - true during iDMRG as well
 		static int mMax;				// max size of effective Hamiltonian
         Eigen::MatrixXd primeToRhoBasis;			// change-of-basis matrix
 

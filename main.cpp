@@ -23,7 +23,7 @@ int main()
 	int mMax = 16,						    // max number of stored states
 		nSweeps = 2;						// number of sweeps to be performed
     double lancTolerance = 1e-6;     // acceptable error in ground state vector
-
+    
 	bool energyOnly = false,
 		// calculate observables? (if true, rest of this section irrelevant)
 		 calcOneSiteExpValues = true, // calculate single-site expectation values?
@@ -80,10 +80,14 @@ int main()
 		{
             for(int site = lSFinal - 1, end = ham.lSys - 4 - skips; site < end; site++)
                 blocks[site + 1] = blocks[site].nextBlock(ham, false, false,
-                                                          blocks[ham.lSys - 4 - site]);
+                                                          blocks[ham.lSys - 4 - site],
+                                                          blocks[ham.lSys - 5 - site]);
+            blocks[skips].reflectPredictedPsi();
+                               // reflect the system to reverse sweep direction
             for(int site = skips, end = lSFinal - 1; site < end; site++)
                 blocks[site + 1] = blocks[site].nextBlock(ham, false, false,
-                                                          blocks[ham.lSys - 4 - site]);
+                                                          blocks[ham.lSys - 4 - site],
+                                                          blocks[ham.lSys - 5 - site]);
             std::cout << "Sweep " << i << " complete." << std::endl;
         };
         EffectiveHamiltonian hSuperFinal(blocks[lSFinal - 1].createHSuperFinal(ham),

@@ -19,7 +19,7 @@ double lanczos(const MatrixXd& mat, VectorXd& seed, double tolerance)
     VectorXd x = seed;
     MatrixXd basisVecs = x;
     x.noalias() = mat * basisVecs;
-    a.push_back(basisVecs.col(0).dot(x));
+    a.push_back(seed.dot(x));
     b.push_back(0.);
     VectorXd oldGS;
     int i = 0;                                      // iteration counter
@@ -39,14 +39,15 @@ double lanczos(const MatrixXd& mat, VectorXd& seed, double tolerance)
         NZC = 1;
     std::vector<int> ISUPPZ;
     ISUPPZ.reserve(2);
-    bool TRYRAC = false;
+    bool TRYRAC = true;
     double optLWORK;
     std::vector<double> WORK;
     int LWORK,
         optLIWORK;
     std::vector<int> IWORK;
     int LIWORK,
-        INFO;
+        INFO,
+        maxIters = std::min(n, 100);
     do
     {
         i++;
@@ -82,12 +83,14 @@ double lanczos(const MatrixXd& mat, VectorXd& seed, double tolerance)
         dstemr_(&JOBZ, &RANGE, &N, D.data(), E.data(), &VL, &VU, &IL, &IU, &M,
                 W.data(), Z.data(), &LDZ, &NZC, ISUPPZ.data(), &TRYRAC,
                 WORK.data(), &LWORK, IWORK.data(), &LIWORK, &INFO);
-        seed = basisVecs * Z;
+        seed.noalias() = basisVecs * Z;
+        seed /= seed.norm();
     } while(std::min((seed - oldGS).norm(), (seed + oldGS).norm()) > tolerance
-            && N <= n);
-    if(N > n)
+            && N <= maxIters);
+    if(N > maxIters)
     {
-        std::cerr << "Lanczos algorithm failed to converge." << std::endl;
+        std::cerr << "Lanczos algorithm failed to converge after " << N
+                  << " iterations." << std::endl;
         exit(EXIT_FAILURE);
     };
     return W.front();
