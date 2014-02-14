@@ -22,7 +22,7 @@ int main()
 	oneSiteConsts.push_back(1.);			// h
 	int mMax = 16,						    // max number of stored states
 		nSweeps = 2;						// number of sweeps to be performed
-    double lancTolerance = 1e-6;     // acceptable error in ground state vector
+    double groundStateErrorTolerance = 1e-6;
     
 	bool energyOnly = false,
 		// calculate observables? (if true, rest of this section irrelevant)
@@ -71,7 +71,8 @@ int main()
         std::cout << "Performing iDMRG..." << std::endl;
         for(int site = 0; site < skips; site++)
             blocks[site + 1] = blocks[site].nextBlock(ham);       // initial ED
-        TheBlock::lancTolerance = lancTolerance;
+        TheBlock::lancTolerance = groundStateErrorTolerance
+                                  * groundStateErrorTolerance / 2;
         for(int site = skips, end = lSFinal - 1; site < end; site++)
             blocks[site + 1] = blocks[site].nextBlock(ham, false);
         if(nSweeps != 0)

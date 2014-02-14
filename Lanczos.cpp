@@ -1,3 +1,4 @@
+#include <cmath>
 #include "d.h"
 #include "main.h"
 
@@ -86,7 +87,7 @@ double lanczos(const MatrixXd& mat, VectorXd& seed, double lancTolerance)
         seed.noalias() = basisVecs * Z;
         seed /= seed.norm();
     } while(N < minIters ||
-            (std::min((seed - oldGS).norm(), (seed + oldGS).norm()) > lancTolerance
+            (std::abs(1 - std::abs(seed.dot(oldGS))) > lancTolerance
              && N < maxIters));
     if(N == maxIters)
     {

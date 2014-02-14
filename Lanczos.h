@@ -1,2 +1,3 @@
 double lanczos(const Eigen::MatrixXd& mat, Eigen::VectorXd& seed,
-               double lancTolerance); // changes input seed to ground eigenvector
+               double lancTolerance);
+     // changes input seed to ground eigenvector - make sure seed is normalized
