@@ -11,8 +11,7 @@ EffectiveHamiltonian::EffectiveHamiltonian(const MatrixXd& matFinal,
                                            int mSFinal, int skips)
     : mSFinal(mSFinal), skips(skips)
 {
-    VectorXd seed = VectorXd::Random(mSFinal * d * mSFinal * d);
-    seed /= seed.norm();
+    VectorXd seed = TheBlock::psiGround;
     gsEnergy = lanczos(matFinal, seed, TheBlock::lancTolerance);
     psiGround = seed;
 };
