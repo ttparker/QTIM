@@ -91,7 +91,7 @@ int main()
             std::cout << "Sweep " << i << " complete." << std::endl;
         };
         EffectiveHamiltonian hSuperFinal = blocks[lSFinal - 1]
-                                 .createHSuperFinal(ham, lancTolerance, skips);
+                                 .createHSuperFinal(ham, skips);
                                                // calculate ground-state energy
 		fileout << "Ground state energy density = "
 				<< hSuperFinal.gsEnergy / ham.lSys << std::endl	<< std::endl;

@@ -10,8 +10,8 @@ class EffectiveHamiltonian
     public:
         double gsEnergy;                         // returns ground-state energy
         
-        EffectiveHamiltonian(const Eigen::MatrixXd& matFinal, double lancTolerance,
-                             int mSFinal, int skips);
+        EffectiveHamiltonian(const Eigen::MatrixXd& matFinal, int mSFinal,
+                             int skips);
         double expValue(const opsVec& ops, std::vector<TheBlock>& blocks);
         // calculates exectation value of a combination of single-site operators
 

@@ -107,7 +107,6 @@ void TheBlock::reflectPredictedPsi()
 };
 
 EffectiveHamiltonian TheBlock::createHSuperFinal(const Hamiltonian& ham,
-                                                 double lancTolerance,
                                                  int skips) const
 {
     return EffectiveHamiltonian(kp(hS, Id(d * m * d))
@@ -117,7 +116,7 @@ EffectiveHamiltonian TheBlock::createHSuperFinal(const Hamiltonian& ham,
                                 + kp(Id(m * d * m), ham.h1)
                                 + kp(Id(m * d), ham.blockSiteJoin(rhoBasisH2))
                                 + kp(kp(Id(m * d), hS), Id_d),
-                                lancTolerance, m, skips);
+                                m, skips);
 };
 
 MatrixXd TheBlock::changeBasis(const MatrixXd& mat) const

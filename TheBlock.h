@@ -20,8 +20,7 @@ class TheBlock
                                                      // performs each DMRG step
         void reflectPredictedPsi();            // when you reach edge of system
 		EffectiveHamiltonian createHSuperFinal(const Hamiltonian& ham,
-                                               double lancTolerance, int skips)
-                                               const;
+                                               int skips) const;
 
 	private:
 		Eigen::MatrixXd hS;								// block Hamiltonian
