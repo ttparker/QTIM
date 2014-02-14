@@ -1,6 +1,8 @@
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
     rmMatrixXd;
 
+class EffectiveHamiltonian;
+
 class TheBlock
 {
 	public:
@@ -17,8 +19,9 @@ class TheBlock
                            const TheBlock& beforeCompBlock = TheBlock());
                                                      // performs each DMRG step
         void reflectPredictedPsi();            // when you reach edge of system
-		std::pair<Eigen::MatrixXd, int> createHSuperFinal(const Hamiltonian& ham)
-            const;
+		EffectiveHamiltonian createHSuperFinal(const Hamiltonian& ham,
+                                               double lancTolerance, int skips)
+                                               const;
 
 	private:
 		Eigen::MatrixXd hS;								// block Hamiltonian

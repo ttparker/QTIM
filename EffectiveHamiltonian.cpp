@@ -7,14 +7,14 @@
 
 using namespace Eigen;
 
-EffectiveHamiltonian::EffectiveHamiltonian(const std::pair<MatrixXd, int>&
-                                           hSuperFinal, double lancTolerance,
+EffectiveHamiltonian::EffectiveHamiltonian(const MatrixXd& matFinal,
+                                           double lancTolerance, int mSFinal,
                                            int skips)
-    : mSFinal(hSuperFinal.second), skips(skips)
+    : mSFinal(mSFinal), skips(skips)
 {
     VectorXd seed = VectorXd::Random(mSFinal * d * mSFinal * d);
     seed /= seed.norm();
-    gsEnergy = lanczos(hSuperFinal.first, seed, lancTolerance);
+    gsEnergy = lanczos(matFinal, seed, lancTolerance);
     psiGround = seed;
 };
 

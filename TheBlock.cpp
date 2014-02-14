@@ -2,6 +2,7 @@
 #include "main.h"
 #include "Hamiltonian.h"
 #include "TheBlock.h"
+#include "EffectiveHamiltonian.h"
 #include "Lanczos.h"
 
 using namespace Eigen;
@@ -105,17 +106,18 @@ void TheBlock::reflectPredictedPsi()
     psiGround.resize(mMax * d * m * d, 1);
 };
 
-std::pair<Eigen::MatrixXd, int> TheBlock::createHSuperFinal(const Hamiltonian& ham)
-    const
+EffectiveHamiltonian TheBlock::createHSuperFinal(const Hamiltonian& ham,
+                                                 double lancTolerance,
+                                                 int skips) const
 {
-    return std::make_pair(MatrixXd(kp(hS, Id(d * m * d))
-								   + kp(ham.blockSiteJoin(rhoBasisH2), Id(m * d))
-								   + kp(kp(Id(m), ham.h1), Id(m * d))
-								   + ham.siteSiteJoin(m, m)
-								   + kp(Id(m * d * m), ham.h1)
-								   + kp(Id(m * d), ham.blockSiteJoin(rhoBasisH2))
-								   + kp(kp(Id(m * d), hS), Id_d)),
-								   m);
+    return EffectiveHamiltonian(kp(hS, Id(d * m * d))
+                                + kp(ham.blockSiteJoin(rhoBasisH2), Id(m * d))
+                                + kp(kp(Id(m), ham.h1), Id(m * d))
+                                + ham.siteSiteJoin(m, m)
+                                + kp(Id(m * d * m), ham.h1)
+                                + kp(Id(m * d), ham.blockSiteJoin(rhoBasisH2))
+                                + kp(kp(Id(m * d), hS), Id_d),
+                                lancTolerance, m, skips);
 };
 
 MatrixXd TheBlock::changeBasis(const MatrixXd& mat) const
