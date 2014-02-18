@@ -15,7 +15,7 @@ using namespace Eigen;
 double lanczos(const MatrixXd& mat, VectorXd& seed, double lancTolerance)
 {
     const int minIters = 4,
-              maxIters = std::min(mat.rows(), 100);
+              maxIters = std::min(int(mat.rows()), 100);
     std::vector<double> a,
                         b;
     VectorXd x = seed;
