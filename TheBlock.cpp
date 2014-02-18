@@ -1,7 +1,3 @@
-#include "d.h"
-#include "main.h"
-#include "Hamiltonian.h"
-#include "TheBlock.h"
 #include "EffectiveHamiltonian.h"
 #include "Lanczos.h"
 

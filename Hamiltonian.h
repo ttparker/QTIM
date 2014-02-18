@@ -1,3 +1,8 @@
+#ifndef HAMILTONIAN_H
+#define HAMILTONIAN_H
+
+#include "main.h"
+
 class Hamiltonian
 {
 	public:
@@ -23,3 +28,5 @@ class Hamiltonian
 	friend class TheBlock;
     friend void modifyHamParams(int trial);
 };
+
+#endif

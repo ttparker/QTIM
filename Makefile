@@ -3,7 +3,8 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -O3 -std=c++11 -march=native -I ../Eigen_3.2.0 $(DEBUG)
 LIBS = -llapack
 OBJS = EffectiveHamiltonian.o FreeFunctions.o Lanczos.o main.o modifyHamParams.o QTIM.o TheBlock.o
-COMMONHS = d.h main.h Hamiltonian.h
+COMMONHS1 = d.h main.h
+COMMONHS2 = $(COMMONHS1) Hamiltonian.h TheBlock.h EffectiveHamiltonian.h
 light = rm -f *.cpp~ *.h~ Makefile~
 git = rm -f $(PROG) ./Output/*
 deep = $(git) *.o
@@ -11,17 +12,17 @@ deep = $(git) *.o
 $(PROG): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LIBS) -o $(PROG) $(OBJS)
 
-EffectiveHamiltonian.o: $(COMMONHS) TheBlock.h EffectiveHamiltonian.h Lanczos.h
+EffectiveHamiltonian.o: $(COMMONHS2) Lanczos.h
 
-FreeFunctions.o: $(COMMONHS) TheBlock.h EffectiveHamiltonian.h
+FreeFunctions.o: $(COMMONHS2)
 
-Lanczos.o: d.h main.h
+Lanczos.o: $(COMMONHS1)
 
-main.o: $(COMMONHS) TheBlock.h EffectiveHamiltonian.h FreeFunctions.h
+main.o: $(COMMONHS2) FreeFunctions.h
 
-QTIM.o: $(COMMONHS)
+QTIM.o: $(COMMONHS1) Hamiltonian.h
 
-TheBlock.o: $(COMMONHS) TheBlock.h Lanczos.h
+TheBlock.o: $(COMMONHS2) Lanczos.h
 
 lightclean:
 	$(light)

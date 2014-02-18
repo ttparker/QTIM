@@ -1,5 +1,3 @@
-#include "d.h"
-#include "main.h"
 #include "Hamiltonian.h"
 
 #define j couplingConstants[0]

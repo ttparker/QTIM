@@ -1,4 +1,8 @@
+#ifndef EFFECTIVEHAMILTONAIN_H
+#define EFFECTIVEHAMILTONAIN_H
+
 #include <map>
+#include "TheBlock.h"
 
 typedef std::vector<std::pair<MatrixDd, int>,
                     Eigen::aligned_allocator<std::pair<MatrixDd, int>>> opsVec;
@@ -27,3 +31,5 @@ class EffectiveHamiltonian
 									std::vector<TheBlock>& blocks) const;
 				// converts single-site operators into the system block basis
 };
+
+#endif

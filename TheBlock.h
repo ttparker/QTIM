@@ -1,3 +1,8 @@
+#ifndef THEBLOCK_H
+#define THEBLOCK_H
+
+#include "Hamiltonian.h"
+
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
     rmMatrixXd;
 
@@ -38,3 +43,5 @@ class TheBlock
 
 	friend class EffectiveHamiltonian;
 };
+
+#endif
