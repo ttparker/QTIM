@@ -37,4 +37,4 @@ clean:
 	$(deep)
 
 upload:
-	scp *.cpp *.h Makefile knot.cnsi.ucsb.edu:~/QTIM
+	scp *.cpp *.h Makefile knot.cnsi.ucsb.edu:~/$(DEST)
