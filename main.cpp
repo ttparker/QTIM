@@ -58,7 +58,7 @@ int main()
         int skips = 0;
         for(int runningKeptStates = d * d; runningKeptStates <= mMax; skips++)
             runningKeptStates *= d;  // find how many edge sites can be skipped
-        std::vector<TheBlock> blocks(ham.lSys - 3);	       // initialize system
+        std::vector<TheBlock> blocks(ham.lSys - 3 - skips); // initialize system
 		blocks[0] = TheBlock(ham, mMax);	// initialize the one-site block
         std::cout << "Performing iDMRG..." << std::endl;
         for(int site = 0; site < skips; site++)

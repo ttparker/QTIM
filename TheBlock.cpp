@@ -112,7 +112,7 @@ EffectiveHamiltonian TheBlock::createHSuperFinal(const Hamiltonian& ham,
                                 + kp(Id(m * d * m), ham.h1)
                                 + kp(Id(m * d), ham.blockSiteJoin(rhoBasisH2))
                                 + kp(kp(Id(m * d), hS), Id_d),
-                                m, skips);
+                                ham.lSys, m, skips);
 };
 
 MatrixXd TheBlock::changeBasis(const MatrixXd& mat) const
