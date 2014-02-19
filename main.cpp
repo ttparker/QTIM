@@ -67,7 +67,7 @@ int main()
         clock_t startTrial = clock();
 		std::cout << "Trial " << trial << ":" <<std::endl;
         std::ofstream fileout("Output/Trial_" + std::to_string(trial));
-		fileout << "Trial " << trial << ":" <<std::endl;
+		fileout << "Trial " << trial << ":\n" << std::endl;
         
         // read in parameters that vary over trials:
         int lSys;                           // system length
@@ -82,6 +82,12 @@ int main()
         filein >> rangeOfObservables >> groundStateErrorTolerance >> mMax
                >> nSweeps;
         
+        fileout << "System length: " << lSys << "\nCoupling constants:";
+        for(int i = 0; i < nCouplingConstants; i++)
+            fileout << " " << couplingConstants[i];
+        fileout << "\nLanczos tolerance: " << groundStateErrorTolerance
+                << "\nBond dimension: " << mMax << "\nNumber of sweeps: "
+                << nSweeps << std::endl << std::endl;
         ham.setParams(lSys, couplingConstants);
         int skips = 0;
         for(int runningKeptStates = d * d; runningKeptStates <= mMax; skips++)
