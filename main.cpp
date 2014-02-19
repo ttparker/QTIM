@@ -9,13 +9,18 @@ int main()
 {
     clock_t start = clock();
 
+    std::ifstream filein("Input/Input");
+    if(!filein)
+    {
+        std::cerr << "Couldn't open input file." << std::endl;
+        exit(EXIT_FAILURE);
+    };
+    
 	// **************** begin modifiable parameters
 	const int numberOfTrials = 1;
 	int lSys = 16;							// system length - must be even
-	std::vector<double> couplingConsts;
-	couplingConsts.push_back(-1.);			// J
-	std::vector<double> oneSiteConsts;
-	oneSiteConsts.push_back(1.);			// h
+	std::vector<double> couplingConsts = {-1.};
+    double h = 1.;
 	int mMax = 16,						    // max number of stored states
 		nSweeps = 2;						// number of sweeps to be performed
     double groundStateErrorTolerance = 1e-6;
@@ -25,27 +30,23 @@ int main()
 		 calcOneSiteExpValues = true, // calculate single-site expectation values?
 		 calcTwoSiteExpValues = true; // calculate two-site expectation values?
 	int rangeOfObservables;	// number of sites in center at which to
-	// calculate observables (must be even and less than currentLSys) - set below
+        // calculate observables (must be even and less than lSys) - set below
 	MatrixDd oneSiteOp,
 			 firstTwoSiteOp,
 			 secondTwoSiteOp;
 	if(!energyOnly)
 	{
 		rangeOfObservables = 8;
-		MatrixDd sigmax;
-		sigmax << 0., 1.,
-				  1., 0.;
-		MatrixDd sigmaz;
-		sigmaz << 1., 0.,
-				  0., -1.;
+        #include "ObservableOps.h"
 		oneSiteOp = sigmaz,
 		firstTwoSiteOp = sigmax,
 		secondTwoSiteOp = sigmax;
 	};
 	// **************** end modifiable parameters
-
-	Hamiltonian ham(lSys, couplingConsts, oneSiteConsts);
-										// initialize the system's Hamiltonian
+    
+    filein.close();
+    
+	Hamiltonian ham;			// initialize the system's Hamiltonian
 	std::ofstream fileout;
 	fileout.open("Output/Output", std::ios::out);
 	if (!fileout)
@@ -57,7 +58,7 @@ int main()
 	{
 		std::cout << "Trial " << trial << ":" <<std::endl;
 		fileout << "Trial " << trial << ":" <<std::endl;
-//		modifyHamParams(trial);
+		ham.setParams(lSys, couplingConsts, h);
 		int lSFinal = ham.lSys / 2 - 1;		// final length of the system block
 		std::vector<TheBlock> blocks(ham.lSys - 3);		// initialize system
 		blocks[0] = TheBlock(ham, mMax);	// initialize the one-site block

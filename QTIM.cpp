@@ -7,17 +7,20 @@
 
 using namespace Eigen;
 
-Hamiltonian::Hamiltonian(int lSys,
-						 const std::vector<double>& couplingConstants,
-						 const std::vector<double>& oneSiteConstants)
-						 : lSys(lSys), couplingConstants(couplingConstants)
+Hamiltonian::Hamiltonian()
 {
-	h2.resize(couplingConstants.size());
+	h2.resize(1);
 	sigmax << 0., 1.,
 			  1., 0.;								 // define Pauli matrices
-	h1 << -h, 0.,
-		  0., h;
 };
+
+void Hamiltonian::setParams(int lSysIn, const std::vector<double>& couplingConstantsIn, double hIn)
+{
+    lSys = lSysIn;
+    couplingConstants = couplingConstantsIn;
+    h1 << -hIn, 0.,
+          0.,   hIn;
+}
 
 MatrixXd Hamiltonian::blockSiteJoin(const std::vector<MatrixXd>& rhoBasisH2) const
 {
