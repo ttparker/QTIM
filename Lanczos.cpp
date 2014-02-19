@@ -13,10 +13,12 @@ using namespace Eigen;
 
 double lanczos(const MatrixXd& mat, VectorXd& seed, double lancTolerance)
 {
-    const int minIters = 4,
+    const int minIters = 3,
               maxIters = std::min(int(mat.rows()), 100);
     std::vector<double> a,
                         b;
+    a.reserve(minIters);
+    b.reserve(minIters);
     VectorXd x = seed;
     MatrixXd basisVecs = x;
     x.noalias() = mat * basisVecs;
@@ -29,12 +31,15 @@ double lanczos(const MatrixXd& mat, VectorXd& seed, double lancTolerance)
     int N = 1;
     std::vector<double> D,
                         E;
+    D.reserve(minIters);
+    E.reserve(minIters);
     double VL,
            VU;
     int IL = 1,
         IU = 1,
         M;
     std::vector<double> W;
+    W.reserve(minIters);
     VectorXd Z;
     int LDZ,
         NZC = 1;
@@ -60,7 +65,6 @@ double lanczos(const MatrixXd& mat, VectorXd& seed, double lancTolerance)
         basisVecs.col(i) = x / b[i];
         x.noalias() = mat * basisVecs.col(i) - b[i] * basisVecs.col(i - 1);
         a.push_back(basisVecs.col(i).dot(x));
-        b.reserve(i + 2);                  // allocate an extra slot for dstemr
         
         // Lanczos stage 2: diagonalize tridiagonal matrix
         N++;
