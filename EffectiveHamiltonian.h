@@ -14,18 +14,19 @@ class EffectiveHamiltonian
     public:
         double gsEnergy;                         // returns ground-state energy
         
-        EffectiveHamiltonian(const Eigen::MatrixXd& matFinal, int mSFinal,
-                             int skips);
+        EffectiveHamiltonian(const Eigen::MatrixXd& matFinal, int lSupFinal,
+                             int mSFinal, int skips);
         double expValue(const opsVec& ops, std::vector<TheBlock>& blocks);
         // calculates exectation value of a combination of single-site operators
 
     private:
         rmMatrixXd psiGround;				// final superblock ground state
-        int mSFinal,                // final number of states stored per block
+        int lSupFinal,                      // final system size
+            mSFinal,                // final number of states stored per block
             skips;
         
         void placeOp(const std::pair<MatrixDd, int>& op, opsMap& blockSide,
-                     bool reflect, int lSupFinal = 0);
+                     bool reflect);
                     // assign each one-site observable to the appropriate block
         Eigen::MatrixXd rhoBasisRep(const opsMap& blockOps,
 									std::vector<TheBlock>& blocks) const;
