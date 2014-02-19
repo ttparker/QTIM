@@ -9,7 +9,7 @@ class Hamiltonian
 		int lSys;									// current system length
         
 		Hamiltonian();
-        void setParams(int lSys, const std::vector<double>& couplingConstants, double hIn);
+        void setParams(int lSys, const std::vector<double>& couplingConstants);
         
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         

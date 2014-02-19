@@ -8,7 +8,7 @@ using namespace Eigen;
 int main()
 {
     clock_t start = clock();
-
+    
     std::ifstream filein("Input/Input");
     if(!filein)
     {
@@ -16,101 +16,131 @@ int main()
         exit(EXIT_FAILURE);
     };
     
-	// **************** begin modifiable parameters
-	const int numberOfTrials = 1;
-	int lSys = 16;							// system length - must be even
-	std::vector<double> couplingConsts = {-1.};
-    double h = 1.;
-	int mMax = 16,						    // max number of stored states
-		nSweeps = 2;						// number of sweeps to be performed
-    double groundStateErrorTolerance = 1e-6;
+	// read in parameters that are constant across all trials:
+    int nTrials,
+        nCouplingConstants;
+    bool calcObservables;
+	filein >> nTrials >> nCouplingConstants >> calcObservables;
+    bool calcOneSiteExpValues;
+    int indexOfOneSiteOp;
+    MatrixDd oneSiteOp;
+    bool calcTwoSiteExpValues;
+    int indexOfFirstTwoSiteOp,
+        indexOfSecondTwoSiteOp;
+    MatrixDd firstTwoSiteOp,
+             secondTwoSiteOp;
+    #include "ObservableOps.h"
+    if(calcObservables)
+    {
+        filein >> calcOneSiteExpValues;
+        if(calcOneSiteExpValues)
+        {
+            filein >> indexOfOneSiteOp;
+            oneSiteOp = obsList[indexOfOneSiteOp];
+        };
+        filein >> calcTwoSiteExpValues;
+        if(calcTwoSiteExpValues)
+        {
+            filein >> indexOfFirstTwoSiteOp >> indexOfSecondTwoSiteOp;
+            firstTwoSiteOp = obsList[indexOfFirstTwoSiteOp];
+            secondTwoSiteOp = obsList[indexOfSecondTwoSiteOp];
+        };
+    };
     
-	bool energyOnly = false,
-		// calculate observables? (if true, rest of this section irrelevant)
-		 calcOneSiteExpValues = true, // calculate single-site expectation values?
-		 calcTwoSiteExpValues = true; // calculate two-site expectation values?
-	int rangeOfObservables;	// number of sites in center at which to
-        // calculate observables (must be even and less than lSys) - set below
-	MatrixDd oneSiteOp,
-			 firstTwoSiteOp,
-			 secondTwoSiteOp;
-	if(!energyOnly)
+    std::ofstream infoout("Output/Info");
+    if(infoout)
+        infoout << "Number of trials: " << nTrials
+                << "\nCalculate one-site observables? "
+                << (calcOneSiteExpValues ? "Yes" : "No")
+                << "\nIndex of one-site observable: " << indexOfOneSiteOp
+                << "\nCalculate two-site observables? "
+                << (calcTwoSiteExpValues ? "Yes" : "No")
+                << "\nIndices of two-site observables: " << indexOfFirstTwoSiteOp
+                << " " << indexOfSecondTwoSiteOp << std::endl;
+    else
+    {
+        std::cerr << "Couldn't open output files." << std::endl;
+        exit(EXIT_FAILURE);
+    };
+    Hamiltonian ham;			// initialize the system's Hamiltonian
+	for(int trial = 1; trial <= nTrials; trial++)
 	{
-		rangeOfObservables = 8;
-        #include "ObservableOps.h"
-		oneSiteOp = sigmaz,
-		firstTwoSiteOp = sigmax,
-		secondTwoSiteOp = sigmax;
-	};
-	// **************** end modifiable parameters
-    filein.close();
-    
-	Hamiltonian ham;			// initialize the system's Hamiltonian
-	std::ofstream fileout("Output/Output");
-	if (!fileout)
-	{
-		std::cerr << "Couldn't open output file." << std::endl;
-		exit(EXIT_FAILURE);
-	};
-	for(int trial = 0; trial < numberOfTrials; trial++)
-	{
+        clock_t startTrial = clock();
 		std::cout << "Trial " << trial << ":" <<std::endl;
+        std::ofstream fileout("Output/Trial_" + std::to_string(trial));
 		fileout << "Trial " << trial << ":" <<std::endl;
-		ham.setParams(lSys, couplingConsts, h);
+        
+        // read in parameters that vary over trials:
+        int lSys;                           // system length
+        filein >> lSys;
+        std::vector<double> couplingConstants(nCouplingConstants);
+        for(int i = 0; i < nCouplingConstants; i++)
+            filein >> couplingConstants[i];
+        int rangeOfObservables;
+        double groundStateErrorTolerance;
+        int mMax,                           // max number of stored states
+            nSweeps;                        // number of sweeps to be performed
+        filein >> rangeOfObservables >> groundStateErrorTolerance >> mMax
+               >> nSweeps;
+        
+        ham.setParams(lSys, couplingConstants);
         int skips = 0;
         for(int runningKeptStates = d * d; runningKeptStates <= mMax; skips++)
             runningKeptStates *= d;  // find how many edge sites can be skipped
-        std::vector<TheBlock> blocks(ham.lSys - 3 - skips); // initialize system
-		blocks[0] = TheBlock(ham, mMax);	// initialize the one-site block
+        std::vector<TheBlock> blocks(lSys - 3 - skips);    // initialize system
+		blocks[0] = TheBlock(ham, mMax);	   // initialize the one-site block
         std::cout << "Performing iDMRG..." << std::endl;
         for(int site = 0; site < skips; site++)
             blocks[site + 1] = blocks[site].nextBlock(ham);       // initial ED
         TheBlock::lancTolerance = groundStateErrorTolerance
                                   * groundStateErrorTolerance / 2;
-        int lSFinal = ham.lSys / 2 - 1;     // final length of the system block
+        int lSFinal = lSys / 2 - 1;         // final length of the system block
         for(int site = skips, end = lSFinal - 1; site < end; site++)
             blocks[site + 1] = blocks[site].nextBlock(ham, false);
         if(nSweeps != 0)
             std::cout << "Performing fDMRG..." << std::endl;
         for(int i = 1; i <= nSweeps; i++)			// perform the fDMRG sweeps
 		{
-            for(int site = lSFinal - 1, end = ham.lSys - 4 - skips; site < end; site++)
+            for(int site = lSFinal - 1, end = lSys - 4 - skips; site < end;
+                site++)
                 blocks[site + 1] = blocks[site].nextBlock(ham, false, false,
-                                                          blocks[ham.lSys - 4 - site],
-                                                          blocks[ham.lSys - 5 - site]);
+                                                          blocks[lSys - 4 - site],
+                                                          blocks[lSys - 5 - site]);
             blocks[skips].reflectPredictedPsi();
                                // reflect the system to reverse sweep direction
             for(int site = skips, end = lSFinal - 1; site < end; site++)
                 blocks[site + 1] = blocks[site].nextBlock(ham, false, false,
-                                                          blocks[ham.lSys - 4 - site],
-                                                          blocks[ham.lSys - 5 - site]);
+                                                          blocks[lSys - 4 - site],
+                                                          blocks[lSys - 5 - site]);
             std::cout << "Sweep " << i << " complete." << std::endl;
         };
         EffectiveHamiltonian hSuperFinal = blocks[lSFinal - 1]
                                            .createHSuperFinal(ham, skips);
                                                // calculate ground-state energy
 		fileout << "Ground state energy density = "
-				<< hSuperFinal.gsEnergy / ham.lSys << std::endl	<< std::endl;
-		if(!energyOnly)
+				<< hSuperFinal.gsEnergy / lSys << std::endl	<< std::endl;
+		if(calcObservables)
 		{
 			std::cout << "Calculating observables..." << std::endl;
 			if(calcOneSiteExpValues)   // calculate one-site expectation values
-				oneSiteExpValues(oneSiteOp, rangeOfObservables, ham.lSys,
+				oneSiteExpValues(oneSiteOp, rangeOfObservables, lSys,
 								 hSuperFinal, blocks, fileout);
 			if(calcTwoSiteExpValues)   // calculate two-site expectation values
 				twoSiteExpValues(firstTwoSiteOp, secondTwoSiteOp,
-								 rangeOfObservables, ham.lSys, hSuperFinal,
-								 blocks, fileout);
+								 rangeOfObservables, lSys, hSuperFinal, blocks,
+                                 fileout);
 		};
-		std::cout << std::endl;
-		fileout << std::endl;
+        std::cout << std::endl;
+        clock_t stopTrial = clock();
+		fileout << "Elapsed time (s): "
+                << (double)(stopTrial - startTrial)/CLOCKS_PER_SEC << std::endl;
+        fileout.close();
 	};
-
-	clock_t stop = clock();
-    std::cout << "Done." << std::endl;
-	fileout << "Elapsed time (s): " << (double)(stop - start)/CLOCKS_PER_SEC
+    filein.close();
+    
+    clock_t stop = clock();
+    std::cout << "Done. Elapsed time (s): " << (double)(stop - start)/CLOCKS_PER_SEC
 			<< std::endl;
-	fileout.close();
 
 	return 0;
 }

@@ -1,6 +1,5 @@
-MatrixDd sigmax;
-sigmax << 0., 1.,
-          1., 0.;
-MatrixDd sigmaz;
-sigmaz << 1., 0.,
-          0., -1.;
+std::vector<MatrixDd, Eigen::aligned_allocator<MatrixDd>> obsList(2);
+obsList[0] << 0, 1,
+              1, 0;
+obsList[1] << 1, 0,
+              0, -1;

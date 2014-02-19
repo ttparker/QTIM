@@ -1,7 +1,7 @@
 #include "Hamiltonian.h"
 
 #define j couplingConstants[0]
-#define h oneSiteConstants[0]
+#define h couplingConstantsIn[1]
 #define sigmax h2[0]
 #define rhoBasisSigmax rhoBasisH2[0]
 
@@ -14,12 +14,12 @@ Hamiltonian::Hamiltonian()
 			  1., 0.;								 // define Pauli matrices
 };
 
-void Hamiltonian::setParams(int lSysIn, const std::vector<double>& couplingConstantsIn, double hIn)
+void Hamiltonian::setParams(int lSysIn, const std::vector<double>& couplingConstantsIn)
 {
     lSys = lSysIn;
-    couplingConstants = couplingConstantsIn;
-    h1 << -hIn, 0.,
-          0.,   hIn;
+    couplingConstants = {couplingConstantsIn[0]};
+    h1 << -h, 0.,
+          0., h;
 }
 
 MatrixXd Hamiltonian::blockSiteJoin(const std::vector<MatrixXd>& rhoBasisH2) const
