@@ -81,6 +81,8 @@ int main()
             nSweeps;                        // number of sweeps to be performed
         filein >> rangeOfObservables >> groundStateErrorTolerance >> mMax
                >> nSweeps;
+        if(rangeOfObservables == -1)
+            rangeOfObservables = lSys;
         
         fileout << "System length: " << lSys << "\nCoupling constants:";
         for(int i = 0; i < nCouplingConstants; i++)
