@@ -12,10 +12,8 @@ int main()
 	// **************** begin modifiable parameters
 	const int numberOfTrials = 1;
 	int lSys = 16;							// system length - must be even
-	std::vector<double> couplingConsts;
-	couplingConsts.push_back(-1.);			// J
-	std::vector<double> oneSiteConsts;
-	oneSiteConsts.push_back(1.);			// h
+	std::vector<double> couplingConsts = {-1.};
+	std::vector<double> oneSiteConsts = {1.};
 	int mMax = 16,						    // max number of stored states
 		nSweeps = 2;						// number of sweeps to be performed
     double groundStateErrorTolerance = 1e-6;
@@ -46,29 +44,28 @@ int main()
 
 	Hamiltonian ham(lSys, couplingConsts, oneSiteConsts);
 										// initialize the system's Hamiltonian
-	std::ofstream fileout;
-	fileout.open("Output/Output", std::ios::out);
+	std::ofstream fileout("Output/Output");
 	if (!fileout)
 	{
-		std::cout << "Couldn't open output file." << std::endl;
-		exit(1);
+		std::cerr << "Couldn't open output file." << std::endl;
+		exit(EXIT_FAILURE);
 	};
 	for(int trial = 0; trial < numberOfTrials; trial++)
 	{
 		std::cout << "Trial " << trial << ":" <<std::endl;
 		fileout << "Trial " << trial << ":" <<std::endl;
 //		modifyHamParams(trial);
-		int lSFinal = ham.lSys / 2 - 1;		// final length of the system block
-		std::vector<TheBlock> blocks(ham.lSys - 3);		// initialize system
-		blocks[0] = TheBlock(ham, mMax);	// initialize the one-site block
         int skips = 0;
         for(int runningKeptStates = d * d; runningKeptStates <= mMax; skips++)
-            runningKeptStates *= d; // find how many edge sites can be skipped
+            runningKeptStates *= d;  // find how many edge sites can be skipped
+        std::vector<TheBlock> blocks(ham.lSys - 3);	       // initialize system
+		blocks[0] = TheBlock(ham, mMax);	// initialize the one-site block
         std::cout << "Performing iDMRG..." << std::endl;
         for(int site = 0; site < skips; site++)
             blocks[site + 1] = blocks[site].nextBlock(ham);       // initial ED
         TheBlock::lancTolerance = groundStateErrorTolerance
                                   * groundStateErrorTolerance / 2;
+        int lSFinal = ham.lSys / 2 - 1;     // final length of the system block
         for(int site = skips, end = lSFinal - 1; site < end; site++)
             blocks[site + 1] = blocks[site].nextBlock(ham, false);
         if(nSweeps != 0)
@@ -88,7 +85,7 @@ int main()
             std::cout << "Sweep " << i << " complete." << std::endl;
         };
         EffectiveHamiltonian hSuperFinal = blocks[lSFinal - 1]
-                                 .createHSuperFinal(ham, skips);
+                                           .createHSuperFinal(ham, skips);
                                                // calculate ground-state energy
 		fileout << "Ground state energy density = "
 				<< hSuperFinal.gsEnergy / ham.lSys << std::endl	<< std::endl;
