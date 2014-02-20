@@ -140,14 +140,14 @@ int main()
         std::cout << std::endl;
         clock_t stopTrial = clock();
 		fileout << "Elapsed time: "
-                << (double)(stopTrial - startTrial)/CLOCKS_PER_SEC << " s"
+                << double(stopTrial - startTrial)/CLOCKS_PER_SEC << " s"
                 << std::endl;
         fileout.close();
 	};
     filein.close();
     
     clock_t stop = clock();
-    std::cout << "Done. Elapsed time: " << (double)(stop - start)/CLOCKS_PER_SEC
+    std::cout << "Done. Elapsed time: " << double(stop - start)/CLOCKS_PER_SEC
 			  << " s" << std::endl;
 
 	return 0;
