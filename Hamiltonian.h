@@ -2,6 +2,8 @@
 #define HAMILTONIAN_H
 
 #include "main.h"
+#define kp kroneckerProduct
+#define Id(size) MatrixXd::Identity(size, size)
 
 class Hamiltonian
 {

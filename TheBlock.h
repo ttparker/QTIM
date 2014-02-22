@@ -2,6 +2,7 @@
 #define THEBLOCK_H
 
 #include "Hamiltonian.h"
+#define Id_d MatrixDd::Identity()   // one-site identity matrix
 
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
     rmMatrixXd;
