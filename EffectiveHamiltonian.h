@@ -16,7 +16,8 @@ class EffectiveHamiltonian
         
         EffectiveHamiltonian(const Eigen::MatrixXd& matFinal, int lSupFinal,
                              int mSFinal, int skips);
-        double expValue(const opsVec& ops, std::vector<TheBlock>& blocks);
+        double expValue(const opsVec& ops, std::vector<TheBlock>& leftBlocks,
+                        std::vector<TheBlock>& rightBlocks);
         // calculates exectation value of a combination of single-site operators
 
     private:
@@ -26,7 +27,7 @@ class EffectiveHamiltonian
             skips;
         
         void placeOp(const std::pair<MatrixDd, int>& op, opsMap& blockSide,
-                     bool reflect);
+                     bool systemSide);
                     // assign each one-site observable to the appropriate block
         Eigen::MatrixXd rhoBasisRep(const opsMap& blockOps,
 									std::vector<TheBlock>& blocks) const;

@@ -68,7 +68,7 @@ TheBlock TheBlock::nextBlock(const Hamiltonian& ham, bool exactDiag,
     psiGround.resize(md, infiniteStage ? md : compmd);
     SelfAdjointEigenSolver<MatrixXd> rhoSolver(psiGround * psiGround.adjoint());
 											// find density matrix eigenstates
-	primeToRhoBasis = rhoSolver.eigenvectors().rightCols(mMax);
+    primeToRhoBasis = rhoSolver.eigenvectors().rightCols(mMax);
 											// construct change-of-basis matrix
 	for(auto op = ham.h2.begin(), end = ham.h2.begin() + indepCouplingOperators;
         op != end; op++)
@@ -103,15 +103,16 @@ void TheBlock::reflectPredictedPsi()
 };
 
 EffectiveHamiltonian TheBlock::createHSuperFinal(const Hamiltonian& ham,
+                                                 const TheBlock& compBlock,
                                                  int skips) const
 {
-    return EffectiveHamiltonian(kp(hS, Id(d * m * d))
-                                + kp(ham.blockSiteJoin(rhoBasisH2), Id(m * d))
-                                + kp(kp(Id(m), ham.h1), Id(m * d))
-                                + ham.siteSiteJoin(m, m)
-                                + kp(Id(m * d * m), ham.h1)
-                                + kp(Id(m * d), ham.blockSiteJoin(rhoBasisH2))
-                                + kp(kp(Id(m * d), hS), Id_d),
+    return EffectiveHamiltonian(kp(hS, Id(d * compBlock.m * d))
+                                + kp(ham.blockSiteJoin(rhoBasisH2), Id(compBlock.m * d))
+                                + kp(kp(Id(m), ham.h1), Id(compBlock.m * d))
+                                + ham.siteSiteJoin(m, compBlock.m)
+                                + kp(Id(m * d * compBlock.m), ham.h1)
+                                + kp(Id(m * d), ham.blockSiteJoin(compBlock.rhoBasisH2))
+                                + kp(kp(Id(m * d), compBlock.hS), Id_d),
                                 ham.lSys, m, skips);
 };
 

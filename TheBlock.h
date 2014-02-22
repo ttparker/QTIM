@@ -12,6 +12,7 @@ class TheBlock
 {
 	public:
         static double lancTolerance;
+        Eigen::MatrixXd primeToRhoBasis;            // change-of-basis matrix
         
 		TheBlock(int m = 0,
 				 const Eigen::MatrixXd& hS = Eigen::MatrixXd(),
@@ -25,8 +26,9 @@ class TheBlock
                                                      // performs each DMRG step
         void reflectPredictedPsi();            // when you reach edge of system
 		EffectiveHamiltonian createHSuperFinal(const Hamiltonian& ham,
+                                               const TheBlock& compBlock,
                                                int skips) const;
-
+    
 	private:
 		Eigen::MatrixXd hS;								// block Hamiltonian
 		std::vector<Eigen::MatrixXd> rhoBasisH2;
@@ -36,11 +38,10 @@ class TheBlock
         static bool firstfDMRGStep;     // slight abuse of nomeclature
                                         //    - true during iDMRG as well
 		static int mMax;				// max size of effective Hamiltonian
-        Eigen::MatrixXd primeToRhoBasis;			// change-of-basis matrix
-
+        
 		Eigen::MatrixXd changeBasis(const Eigen::MatrixXd& mat) const;
 				// represents operators in the basis of the new system block
-
+    
 	friend class EffectiveHamiltonian;
 };
 
