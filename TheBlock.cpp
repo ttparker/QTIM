@@ -39,7 +39,8 @@ TheBlock TheBlock::nextBlock(const Hamiltonian& ham, bool exactDiag,
 			tempRhoBasisH2.push_back(kp(Id(m), *op));
 		return TheBlock(md, hSprime, tempRhoBasisH2);
 	};
-    int compmd = compBlock.m * d;
+    int compm = compBlock.m,
+        compmd = compm * d;
     VectorXd seed;
     if(infiniteStage)
     {
@@ -59,8 +60,8 @@ TheBlock TheBlock::nextBlock(const Hamiltonian& ham, bool exactDiag,
             + ham.siteSiteJoin(m, m)
             + kp(Id(md), hSprime)) :
             MatrixXd(kp(hSprime, Id(compmd))
-            + ham.siteSiteJoin(m, compBlock.m)
-            + kp(Id(md * compBlock.m), ham.h1)
+            + ham.siteSiteJoin(m, compm)
+            + kp(Id(md * compm), ham.h1)
             + kp(Id(md), ham.blockSiteJoin(compBlock.rhoBasisH2))
             + kp(kp(Id(md), compBlock.hS), Id_d)),
             seed, lancTolerance);	                  // calculate ground state
@@ -79,14 +80,14 @@ TheBlock TheBlock::nextBlock(const Hamiltonian& ham, bool exactDiag,
                     // transpose the environment block and right-hand free site
         {
             rmMatrixXd ePrime = psiGround.row(sPrimeIndex);
-            ePrime.resize(compBlock.m, d);
+            ePrime.resize(compm, d);
             ePrime.transposeInPlace();
             ePrime.resize(1, compmd);
             psiGround.row(sPrimeIndex) = ePrime;
         };
         psiGround = primeToRhoBasis.adjoint() * psiGround; 
                                       // change the expanded system block basis
-        psiGround.resize(mMax * d, compBlock.m);
+        psiGround.resize(mMax * d, compm);
         psiGround *= beforeCompBlock.primeToRhoBasis.transpose();
                                           // change the environment block basis
         psiGround.resize(mMax * d * beforeCompBlock.primeToRhoBasis.rows(), 1);
@@ -112,11 +113,13 @@ EffectiveHamiltonian TheBlock::createHSuperFinal(const Hamiltonian& ham,
                                                  const TheBlock& compBlock,
                                                  int skips) const
 {
-    return EffectiveHamiltonian(kp(hS, Id(d * compBlock.m * d))
-                                + kp(ham.blockSiteJoin(rhoBasisH2), Id(compBlock.m * d))
-                                + kp(kp(Id(m), ham.h1), Id(compBlock.m * d))
-                                + ham.siteSiteJoin(m, compBlock.m)
-                                + kp(Id(m * d * compBlock.m), ham.h1)
+    int compm = compBlock.m,
+        compmd = compm * d;
+    return EffectiveHamiltonian(kp(hS, Id(d * compmd))
+                                + kp(ham.blockSiteJoin(rhoBasisH2), Id(compmd))
+                                + kp(kp(Id(m), ham.h1), Id(compmd))
+                                + ham.siteSiteJoin(m, compm)
+                                + kp(Id(m * d * compm), ham.h1)
                                 + kp(Id(m * d), ham.blockSiteJoin(compBlock.rhoBasisH2))
                                 + kp(kp(Id(m * d), compBlock.hS), Id_d),
                                 ham.lSys, m, skips);
