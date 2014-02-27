@@ -14,12 +14,12 @@ Hamiltonian::Hamiltonian()
 			  1., 0.;								 // define Pauli matrices
 };
 
-void Hamiltonian::setParams(int lSysIn, const std::vector<double>& couplingConstantsIn)
+void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn, int lSysIn)
 {
-    lSys = lSysIn;
-    couplingConstants = {couplingConstantsIn[0]};
     h1 << -h, 0.,
           0., h;
+    couplingConstants = {couplingConstantsIn[0]};
+    lSys = lSysIn;
 }
 
 MatrixXd Hamiltonian::blockSiteJoin(const std::vector<MatrixXd>& rhoBasisH2) const

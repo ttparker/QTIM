@@ -90,27 +90,27 @@ int main()
         fileout << "\nLanczos tolerance: " << groundStateErrorTolerance
                 << "\nBond dimension: " << mMax << "\nNumber of sweeps: "
                 << nSweeps << std::endl << std::endl;
-        ham.setParams(lSys, couplingConstants);
+        ham.setParams(couplingConstants, lSys);
         int skips = 0;
         for(int runningKeptStates = d * d; runningKeptStates <= mMax; skips++)
             runningKeptStates *= d;  // find how many edge sites can be skipped
         std::vector<TheBlock> leftBlocks(lSys - 3 - skips), // initialize system
                               rightBlocks(lSys - 3 - skips);
 		leftBlocks[0] = rightBlocks[0]
-                      = TheBlock(ham, mMax);	   // initialize the one-site block
+                      = TheBlock(ham, mMax);   // initialize the one-site block
         std::cout << "Performing iDMRG..." << std::endl;
-        for(int site = 0; site < skips; site++)
+        for(int site = 0; site < skips; site++)                   // initial ED
             rightBlocks[site + 1] = leftBlocks[site + 1] 
-                                  = leftBlocks[site].nextBlock(ham); // initial ED
+                                  = leftBlocks[site].nextBlock(ham,
+                                                               rightBlocks[site]);
         TheBlock::lancTolerance = groundStateErrorTolerance
                                   * groundStateErrorTolerance / 2;
         int lSFinal = lSys / 2 - 1;         // final length of the system block
-        for(int site = skips, end = lSFinal - 1; site < end; site++)
-        {
+        for(int site = skips, end = lSFinal - 1; site < end; site++)   // iDMRG
             rightBlocks[site + 1] = leftBlocks[site + 1]
-                                  = leftBlocks[site].nextBlock(ham, false);
-            rightBlocks[site].primeToRhoBasis = leftBlocks[site].primeToRhoBasis;
-        };
+                                  = leftBlocks[site].nextBlock(ham,
+                                                               rightBlocks[site],
+                                                               false);
         if(nSweeps == 0)
             leftBlocks[lSFinal - 1].randomSeed();
         else
@@ -121,21 +121,21 @@ int main()
                 for(int site = lSFinal - 1, end = lSys - 4 - skips; site < end;
                     site++)
                     leftBlocks[site + 1] = leftBlocks[site].nextBlock(ham,
-                                           false, false,
                                            rightBlocks[lSys - 4 - site],
+                                           false, false,
                                            rightBlocks[lSys - 5 - site]);
                 rightBlocks[skips].reflectPredictedPsi();
                                // reflect the system to reverse sweep direction
                 for(int site = skips, end = lSys - 4 - skips; site < end; site++)
                     rightBlocks[site + 1] = rightBlocks[site].nextBlock(ham,
-                                            false, false,
                                             leftBlocks[lSys - 4 - site],
+                                            false, false,
                                             leftBlocks[lSys - 5 - site]);
                 leftBlocks[skips].reflectPredictedPsi();
                 for(int site = skips, end = lSFinal - 1; site < end; site++)
                     leftBlocks[site + 1] = leftBlocks[site].nextBlock(ham,
-                                           false, false,
                                            rightBlocks[lSys - 4 - site],
+                                           false, false,
                                            rightBlocks[lSys - 5 - site]);
                 std::cout << "Sweep " << i << " complete." << std::endl;
             };

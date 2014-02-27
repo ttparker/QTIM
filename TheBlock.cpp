@@ -20,8 +20,8 @@ TheBlock::TheBlock(const Hamiltonian& ham, int mMaxIn) : hS(ham.h1), m(d)
 					  ham.h2.begin() + ham.couplingConstants.size());
 };
 
-TheBlock TheBlock::nextBlock(const Hamiltonian& ham, bool exactDiag,
-                             bool infiniteStage, const TheBlock& compBlock,
+TheBlock TheBlock::nextBlock(const Hamiltonian& ham, TheBlock& compBlock,
+                             bool exactDiag, bool infiniteStage,
                              const TheBlock& beforeCompBlock)
                                                       // perform each DMRG step
 {
@@ -74,7 +74,9 @@ TheBlock TheBlock::nextBlock(const Hamiltonian& ham, bool exactDiag,
 	for(auto op = ham.h2.begin(), end = ham.h2.begin() + indepCouplingOperators;
         op != end; op++)
 		tempRhoBasisH2.push_back(changeBasis(kp(Id(m), *op)));
-    if(!infiniteStage)     // modify psiGround to predict the next ground state
+    if(infiniteStage)                // copy primeToRhoBasis to reflected block
+        compBlock.primeToRhoBasis = primeToRhoBasis;
+    else                   // modify psiGround to predict the next ground state
     {
         for(int sPrimeIndex = 0; sPrimeIndex < md; sPrimeIndex++)
                     // transpose the environment block and right-hand free site

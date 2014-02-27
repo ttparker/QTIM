@@ -13,16 +13,14 @@ class TheBlock
 {
 	public:
         static double lancTolerance;
-        Eigen::MatrixXd primeToRhoBasis;            // change-of-basis matrix
         
 		TheBlock(int m = 0,
 				 const Eigen::MatrixXd& hS = Eigen::MatrixXd(),
 				 const std::vector<Eigen::MatrixXd>& rhoBasisH2
 					= std::vector<Eigen::MatrixXd>());
 		TheBlock(const Hamiltonian& ham, int mMax);
-		TheBlock nextBlock(const Hamiltonian& ham, bool exactDiag = true,
-                           bool infiniteStage = true,
-                           const TheBlock& compBlock = TheBlock(),
+		TheBlock nextBlock(const Hamiltonian& ham, TheBlock& compBlock,
+                           bool exactDiag = true, bool infiniteStage = true,
                            const TheBlock& beforeCompBlock = TheBlock());
                                                      // performs each DMRG step
         void randomSeed();                           // for iDMRG case
@@ -40,6 +38,7 @@ class TheBlock
         static bool firstfDMRGStep;     // slight abuse of nomeclature
                                         //    - true during iDMRG as well
 		static int mMax;				// max size of effective Hamiltonian
+        Eigen::MatrixXd primeToRhoBasis;            // change-of-basis matrix
         
 		Eigen::MatrixXd changeBasis(const Eigen::MatrixXd& mat) const;
 				// represents operators in the basis of the new system block
