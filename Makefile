@@ -2,7 +2,7 @@ PROG = QTIM
 CXX = g++
 CXXFLAGS = -Wall -Wextra -O3 -std=c++11 -march=native -I ../Eigen_3.2.0 $(DEBUG)
 LIBS = -llapack
-OBJS = EffectiveHamiltonian.o FreeFunctions.o Lanczos.o main.o QTIM.o TheBlock.o
+OBJS = EffectiveHamiltonian.o FreeFunctions.o Lanczos.o main.o $(PROG).o TheBlock.o
 COMMONHS1 = d.h main.h
 COMMONHS2 = $(COMMONHS1) Hamiltonian.h TheBlock.h EffectiveHamiltonian.h
 light = rm -f *.cpp~ *.h~ Makefile~
@@ -20,7 +20,7 @@ Lanczos.o: $(COMMONHS1)
 
 main.o: $(COMMONHS2) FreeFunctions.h ObservableOps.h
 
-QTIM.o: $(COMMONHS1) Hamiltonian.h
+$(PROG).o: $(COMMONHS1) Hamiltonian.h
 
 TheBlock.o: $(COMMONHS2) Lanczos.h
 
