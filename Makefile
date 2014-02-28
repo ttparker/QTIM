@@ -39,3 +39,6 @@ clean:
 
 upload:
 	scp *.cpp *.h Makefile knot.cnsi.ucsb.edu:~/$(DEST)
+
+download:
+	scp knot.cnsi.ucsb.edu:~/$(SOURCE)/Output/Trial_1 Cluster$(SOURCE)
