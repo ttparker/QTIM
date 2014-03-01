@@ -61,9 +61,9 @@ TheBlock TheBlock::nextBlock(const Hamiltonian& ham, TheBlock& compBlock,
             + kp(Id(md), hSprime)) :
             MatrixXd(kp(hSprime, Id(compmd))
             + ham.siteSiteJoin(m, compm)
-            + kp(Id(md * compm), ham.h1)
-            + kp(Id(md), ham.blockSiteJoin(compBlock.rhoBasisH2))
-            + kp(kp(Id(md), compBlock.hS), Id_d)),
+            + kp(Id(md), kp(Id(compm), ham.h1)
+                         + ham.blockSiteJoin(compBlock.rhoBasisH2)
+                         + kp(compBlock.hS, Id_d))),
             seed, lancTolerance);	                  // calculate ground state
     psiGround = seed;
     psiGround.resize(md, infiniteStage ? md : compmd);
@@ -115,15 +115,16 @@ EffectiveHamiltonian TheBlock::createHSuperFinal(const Hamiltonian& ham,
                                                  const TheBlock& compBlock,
                                                  int skips) const
 {
-    int compm = compBlock.m,
-        compmd = compm * d;
-    return EffectiveHamiltonian(kp(hS, Id(d * compmd))
-                                + kp(ham.blockSiteJoin(rhoBasisH2), Id(compmd))
-                                + kp(kp(Id(m), ham.h1), Id(compmd))
+    int compm = compBlock.m;
+    return EffectiveHamiltonian(kp(kp(hS, Id_d)
+                                   + ham.blockSiteJoin(rhoBasisH2)
+                                   + kp(Id(m), ham.h1),
+                                   Id(compm * d))
                                 + ham.siteSiteJoin(m, compm)
-                                + kp(Id(m * d * compm), ham.h1)
-                                + kp(Id(m * d), ham.blockSiteJoin(compBlock.rhoBasisH2))
-                                + kp(kp(Id(m * d), compBlock.hS), Id_d),
+                                + kp(Id(m * d), kp(Id(compm), ham.h1)
+                                                + ham.blockSiteJoin(compBlock
+                                                                    .rhoBasisH2)
+                                                + kp(compBlock.hS, Id_d)),
                                 ham.lSys, m, skips);
 };
 
