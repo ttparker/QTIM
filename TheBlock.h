@@ -12,8 +12,6 @@ class EffectiveHamiltonian;
 class TheBlock
 {
 	public:
-        static double lancTolerance;
-        
 		TheBlock(int m = 0,
 				 const Eigen::MatrixXd& hS = Eigen::MatrixXd(),
 				 const std::vector<Eigen::MatrixXd>& rhoBasisH2
@@ -23,22 +21,24 @@ class TheBlock
                            bool exactDiag = true, bool infiniteStage = true,
                            const TheBlock& beforeCompBlock = TheBlock());
                                                      // performs each DMRG step
-        void randomSeed();                           // for iDMRG case
-        void reflectPredictedPsi();            // when you reach edge of system
+        static void setLancTolerance(double newLancTolerance);
+        void randomSeed(),                                    // for iDMRG case
+             reflectPredictedPsi();            // when you reach edge of system
 		EffectiveHamiltonian createHSuperFinal(const Hamiltonian& ham,
                                                const TheBlock& compBlock,
                                                int skips) const;
     
 	private:
 		Eigen::MatrixXd hS;								// block Hamiltonian
-		std::vector<Eigen::MatrixXd> rhoBasisH2;
-									// density-matrix-basis coupling operators
-		int m;								// number of states stored in block
-		static rmMatrixXd psiGround;
-        static bool firstfDMRGStep;     // slight abuse of nomeclature
-                                        //    - true during iDMRG as well
-		static int mMax;				// max size of effective Hamiltonian
-        Eigen::MatrixXd primeToRhoBasis;            // change-of-basis matrix
+        std::vector<Eigen::MatrixXd> rhoBasisH2;
+                                     // density-matrix-basis coupling operators
+        int m;                              // number of states stored in block
+        static rmMatrixXd psiGround;
+        static double lancTolerance;
+        static int mMax;				   // max size of effective Hamiltonian
+        Eigen::MatrixXd primeToRhoBasis;              // change-of-basis matrix
+        static bool firstfDMRGStep;
+                     // slight abuse of nomeclature - true during iDMRG as well
         
 		Eigen::MatrixXd changeBasis(const Eigen::MatrixXd& mat) const;
 				// represents operators in the basis of the new system block

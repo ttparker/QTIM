@@ -104,8 +104,8 @@ int main()
             rightBlocks[site + 1] = leftBlocks[site + 1] 
                                   = leftBlocks[site].nextBlock(ham,
                                                                rightBlocks[site]);
-        TheBlock::lancTolerance = groundStateErrorTolerance
-                                  * groundStateErrorTolerance / 2;
+        TheBlock::setLancTolerance(groundStateErrorTolerance
+                                   * groundStateErrorTolerance / 2);
         int lSFinal = lSys / 2 - 1;         // final length of the system block
         for(int site = skips, end = lSFinal - 1; site < end; site++)   // iDMRG
             rightBlocks[site + 1] = leftBlocks[site + 1]
@@ -145,7 +145,7 @@ int main()
                       .createHSuperFinal(ham, rightBlocks[lSFinal - 1], skips);
                                                // calculate ground-state energy
 		fileout << "Ground state energy density = "
-				<< hSuperFinal.gsEnergy / lSys << std::endl	<< std::endl;
+				<< hSuperFinal.gsEnergy() / lSys << std::endl	<< std::endl;
 		if(calcObservables)
 		{
 			std::cout << "Calculating observables..." << std::endl;

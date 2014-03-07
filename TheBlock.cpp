@@ -98,6 +98,11 @@ TheBlock TheBlock::nextBlock(const Hamiltonian& ham, TheBlock& compBlock,
 								// save expanded-block operators in new basis
 };
 
+void TheBlock::setLancTolerance(double newLancTolerance)
+{
+    lancTolerance = newLancTolerance;
+};
+
 void TheBlock::randomSeed()
 {
     psiGround = VectorXd::Random(m * d * m * d);
