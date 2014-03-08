@@ -3,27 +3,28 @@
 
 using namespace Eigen;
 
+Hamiltonian TheBlock::ham;
 rmMatrixXd TheBlock::psiGround;
-bool TheBlock::firstfDMRGStep;
 double TheBlock::lancTolerance;
 int TheBlock::mMax;
+bool TheBlock::firstfDMRGStep;
 
 TheBlock::TheBlock(int m, const MatrixXd& hS,
 				   const std::vector<MatrixXd>& rhoBasisH2)
 				   : hS(hS), rhoBasisH2(rhoBasisH2), m(m) {};
 
-TheBlock::TheBlock(const Hamiltonian& ham, int mMaxIn) : hS(ham.h1), m(d)
+TheBlock::TheBlock(const Hamiltonian& hamIn, int mMaxIn) : hS(hamIn.h1), m(d)
 {
     firstfDMRGStep = true;
+    ham = hamIn;
 	mMax = mMaxIn;
 	rhoBasisH2.assign(ham.h2.begin(),
 					  ham.h2.begin() + ham.couplingConstants.size());
 };
 
-TheBlock TheBlock::nextBlock(const Hamiltonian& ham, TheBlock& compBlock,
-                             bool exactDiag, bool infiniteStage,
+TheBlock TheBlock::nextBlock(TheBlock& compBlock, bool exactDiag,
+                             bool infiniteStage,
                              const TheBlock& beforeCompBlock)
-                                                      // perform each DMRG step
 {
     MatrixXd hSprime = kp(hS, Id_d)
                        + ham.blockSiteJoin(rhoBasisH2)
@@ -116,8 +117,7 @@ void TheBlock::reflectPredictedPsi()
     psiGround.resize(mMax * d * m * d, 1);
 };
 
-EffectiveHamiltonian TheBlock::createHSuperFinal(const Hamiltonian& ham,
-                                                 const TheBlock& compBlock,
+EffectiveHamiltonian TheBlock::createHSuperFinal(const TheBlock& compBlock,
                                                  int skips) const
 {
     int compm = compBlock.m;

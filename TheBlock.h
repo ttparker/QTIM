@@ -17,19 +17,19 @@ class TheBlock
 				 const std::vector<Eigen::MatrixXd>& rhoBasisH2
 					= std::vector<Eigen::MatrixXd>());
 		TheBlock(const Hamiltonian& ham, int mMax);
-		TheBlock nextBlock(const Hamiltonian& ham, TheBlock& compBlock,
-                           bool exactDiag = true, bool infiniteStage = true,
+		TheBlock nextBlock(TheBlock& compBlock, bool exactDiag = true,
+                           bool infiniteStage = true,
                            const TheBlock& beforeCompBlock = TheBlock());
                                                      // performs each DMRG step
         static void setLancTolerance(double newLancTolerance);
         void randomSeed(),                                    // for iDMRG case
              reflectPredictedPsi();            // when you reach edge of system
-		EffectiveHamiltonian createHSuperFinal(const Hamiltonian& ham,
-                                               const TheBlock& compBlock,
+		EffectiveHamiltonian createHSuperFinal(const TheBlock& compBlock,
                                                int skips) const;
     
 	private:
 		Eigen::MatrixXd hS;								// block Hamiltonian
+        static Hamiltonian ham;
         std::vector<Eigen::MatrixXd> rhoBasisH2;
                                      // density-matrix-basis coupling operators
         int m;                              // number of states stored in block
