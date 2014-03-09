@@ -15,11 +15,11 @@ int main()
         exit(EXIT_FAILURE);
     };
     
-	// read in parameters that are constant across all trials:
+    // read in parameters that are constant across all trials:
     int nTrials,
         nCouplingConstants;
     bool calcObservables;
-	filein >> nTrials >> nCouplingConstants >> calcObservables;
+    filein >> nTrials >> nCouplingConstants >> calcObservables;
     bool calcOneSiteExpValues;
     int indexOfOneSiteOp;
     MatrixDd oneSiteOp;
@@ -63,12 +63,12 @@ int main()
     };
     infoout.close();
     Hamiltonian ham;			// initialize the system's Hamiltonian
-	for(int trial = 1; trial <= nTrials; trial++)
-	{
+    for(int trial = 1; trial <= nTrials; trial++)
+    {
         clock_t startTrial = clock();
-		std::cout << "Trial " << trial << ":" <<std::endl;
+        std::cout << "Trial " << trial << ":" <<std::endl;
         std::ofstream fileout("Output/Trial_" + std::to_string(trial));
-		fileout << "Trial " << trial << ":\n" << std::endl;
+        fileout << "Trial " << trial << ":\n" << std::endl;
         
         // read in parameters that vary over trials:
         int lSys;                           // system length
@@ -97,7 +97,7 @@ int main()
             runningKeptStates *= d;  // find how many edge sites can be skipped
         std::vector<TheBlock> leftBlocks(lSys - 3 - skips), // initialize system
                               rightBlocks(lSys - 3 - skips);
-		leftBlocks[0] = rightBlocks[0]
+        leftBlocks[0] = rightBlocks[0]
                       = TheBlock(ham, mMax);   // initialize the one-site block
         std::cout << "Performing iDMRG..." << std::endl;
         for(int site = 0; site < skips; site++)                   // initial ED
@@ -142,31 +142,31 @@ int main()
         EffectiveHamiltonian hSuperFinal = leftBlocks[lSFinal - 1]
                       .createHSuperFinal(rightBlocks[lSFinal - 1], skips);
                                                // calculate ground-state energy
-		fileout << "Ground state energy density = "
-				<< hSuperFinal.gsEnergy() / lSys << std::endl	<< std::endl;
-		if(calcObservables)
-		{
-			std::cout << "Calculating observables..." << std::endl;
-			if(calcOneSiteExpValues)   // calculate one-site expectation values
-				oneSiteExpValues(oneSiteOp, rangeOfObservables, lSys,
-								 hSuperFinal, leftBlocks, rightBlocks, fileout);
-			if(calcTwoSiteExpValues)   // calculate two-site expectation values
-				twoSiteExpValues(firstTwoSiteOp, secondTwoSiteOp,
-								 rangeOfObservables, lSys, hSuperFinal,
+        fileout << "Ground state energy density = "
+                << hSuperFinal.gsEnergy() / lSys << std::endl	<< std::endl;
+        if(calcObservables)
+        {
+            std::cout << "Calculating observables..." << std::endl;
+            if(calcOneSiteExpValues)   // calculate one-site expectation values
+                oneSiteExpValues(oneSiteOp, rangeOfObservables, lSys,
+                                 hSuperFinal, leftBlocks, rightBlocks, fileout);
+            if(calcTwoSiteExpValues)   // calculate two-site expectation values
+                twoSiteExpValues(firstTwoSiteOp, secondTwoSiteOp,
+                                 rangeOfObservables, lSys, hSuperFinal,
                                  leftBlocks, rightBlocks, fileout);
-		};
+        };
         std::cout << std::endl;
         clock_t stopTrial = clock();
-		fileout << "Elapsed time: "
+        fileout << "Elapsed time: "
                 << double(stopTrial - startTrial)/CLOCKS_PER_SEC << " s"
                 << std::endl;
         fileout.close();
-	};
+    };
     filein.close();
     
     clock_t stop = clock();
     std::cout << "Done. Elapsed time: " << double(stop - start)/CLOCKS_PER_SEC
-			  << " s" << std::endl;
+              << " s" << std::endl;
 
-	return 0;
+    return 0;
 }

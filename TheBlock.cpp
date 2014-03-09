@@ -10,16 +10,16 @@ int TheBlock::mMax;
 bool TheBlock::firstfDMRGStep;
 
 TheBlock::TheBlock(int m, const MatrixXd& hS,
-				   const std::vector<MatrixXd>& rhoBasisH2)
-				   : hS(hS), rhoBasisH2(rhoBasisH2), m(m) {};
+                   const std::vector<MatrixXd>& rhoBasisH2)
+                   : hS(hS), rhoBasisH2(rhoBasisH2), m(m) {};
 
 TheBlock::TheBlock(const Hamiltonian& hamIn, int mMaxIn) : hS(hamIn.h1), m(d)
 {
     firstfDMRGStep = true;
     ham = hamIn;
-	mMax = mMaxIn;
-	rhoBasisH2.assign(ham.h2.begin(),
-					  ham.h2.begin() + ham.couplingConstants.size());
+    mMax = mMaxIn;
+    rhoBasisH2.assign(ham.h2.begin(),
+                      ham.h2.begin() + ham.couplingConstants.size());
 };
 
 TheBlock TheBlock::nextBlock(TheBlock& compBlock, bool exactDiag,
@@ -28,18 +28,18 @@ TheBlock TheBlock::nextBlock(TheBlock& compBlock, bool exactDiag,
 {
     MatrixXd hSprime = kp(hS, Id_d)
                        + ham.blockSiteJoin(rhoBasisH2)
-                       + kp(Id(m), ham.h1);		       // expanded system block
-	std::vector<MatrixXd> tempRhoBasisH2;
-	int indepCouplingOperators = ham.couplingConstants.size();
-	tempRhoBasisH2.reserve(indepCouplingOperators);
-	int md = m * d;
-	if(exactDiag)
-	{ // if near edge of system, no truncation necessary so skip DMRG algorithm
-		for(auto op = ham.h2.begin(), end = ham.h2.begin() + indepCouplingOperators;
-			op != end; op++)
-			tempRhoBasisH2.push_back(kp(Id(m), *op));
-		return TheBlock(md, hSprime, tempRhoBasisH2);
-	};
+                       + kp(Id(m), ham.h1);            // expanded system block
+    std::vector<MatrixXd> tempRhoBasisH2;
+    int indepCouplingOperators = ham.couplingConstants.size();
+    tempRhoBasisH2.reserve(indepCouplingOperators);
+    int md = m * d;
+    if(exactDiag)
+    { // if near edge of system, no truncation necessary so skip DMRG algorithm
+        for(auto op = ham.h2.begin(), end = ham.h2.begin() + indepCouplingOperators;
+            op != end; op++)
+            tempRhoBasisH2.push_back(kp(Id(m), *op));
+        return TheBlock(md, hSprime, tempRhoBasisH2);
+    };
     int compm = compBlock.m,
         compmd = compm * d;
     VectorXd seed;
@@ -69,12 +69,12 @@ TheBlock TheBlock::nextBlock(TheBlock& compBlock, bool exactDiag,
     psiGround = seed;
     psiGround.resize(md, infiniteStage ? md : compmd);
     SelfAdjointEigenSolver<MatrixXd> rhoSolver(psiGround * psiGround.adjoint());
-											// find density matrix eigenstates
+                                             // find density matrix eigenstates
     primeToRhoBasis = rhoSolver.eigenvectors().rightCols(mMax);
-											// construct change-of-basis matrix
-	for(auto op = ham.h2.begin(), end = ham.h2.begin() + indepCouplingOperators;
+                                             // construct change-of-basis matrix
+    for(auto op = ham.h2.begin(), end = ham.h2.begin() + indepCouplingOperators;
         op != end; op++)
-		tempRhoBasisH2.push_back(changeBasis(kp(Id(m), *op)));
+        tempRhoBasisH2.push_back(changeBasis(kp(Id(m), *op)));
     if(infiniteStage)                // copy primeToRhoBasis to reflected block
         compBlock.primeToRhoBasis = primeToRhoBasis;
     else                   // modify psiGround to predict the next ground state
@@ -95,8 +95,8 @@ TheBlock TheBlock::nextBlock(TheBlock& compBlock, bool exactDiag,
                                           // change the environment block basis
         psiGround.resize(mMax * d * beforeCompBlock.primeToRhoBasis.rows(), 1);
     };
-	return TheBlock(mMax, changeBasis(hSprime), tempRhoBasisH2);
-								// save expanded-block operators in new basis
+    return TheBlock(mMax, changeBasis(hSprime), tempRhoBasisH2);
+                                  // save expanded-block operators in new basis
 };
 
 void TheBlock::setLancTolerance(double newLancTolerance)
@@ -135,5 +135,5 @@ EffectiveHamiltonian TheBlock::createHSuperFinal(const TheBlock& compBlock,
 
 MatrixXd TheBlock::changeBasis(const MatrixXd& mat) const
 {
-	return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
+    return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
 };

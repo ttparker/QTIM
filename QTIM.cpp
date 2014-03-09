@@ -9,9 +9,9 @@ using namespace Eigen;
 
 Hamiltonian::Hamiltonian()
 {
-	h2.resize(1);
-	sigmax << 0., 1.,
-			  1., 0.;								 // define Pauli matrices
+    h2.resize(1);
+    sigmax << 0., 1.,
+              1., 0.;                                // define Pauli matrices
 };
 
 void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn, int lSysIn)
@@ -24,10 +24,10 @@ void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn, int 
 
 MatrixXd Hamiltonian::blockSiteJoin(const std::vector<MatrixXd>& rhoBasisH2) const
 {
-	return j * kp(rhoBasisSigmax, sigmax);
+    return j * kp(rhoBasisSigmax, sigmax);
 };
 
 MatrixXd Hamiltonian::siteSiteJoin(int m1, int m2) const
 {
-	return j * kp(kp(Id(m1), sigmax), kp(Id(m2), sigmax));
+    return j * kp(kp(Id(m1), sigmax), kp(Id(m2), sigmax));
 };

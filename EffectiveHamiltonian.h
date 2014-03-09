@@ -30,8 +30,8 @@ class EffectiveHamiltonian
                      bool systemSide);
                     // assign each one-site observable to the appropriate block
         Eigen::MatrixXd rhoBasisRep(const opsMap& blockOps,
-									std::vector<TheBlock>& blocks) const;
-				// converts single-site operators into the system block basis
+                                    std::vector<TheBlock>& blocks) const;
+                // converts single-site operators into the system block basis
 };
 
 #endif
