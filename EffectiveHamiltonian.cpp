@@ -11,6 +11,13 @@ EffectiveHamiltonian::EffectiveHamiltonian(const MatrixXd& matFinal,
     VectorXd seed = TheBlock::psiGround;
     storedGSEnergy = lanczos(matFinal, seed, TheBlock::lancTolerance);
     psiGround = seed;
+    if(lSupFinal % 2)
+    {
+        lSFinal = (lSupFinal - 1)/2;
+        lEFinal = (lSupFinal - 3)/2;
+    }
+    else
+        lSFinal = lEFinal = lSupFinal / 2 - 1;
 };
 
 double EffectiveHamiltonian::gsEnergy() const
@@ -22,9 +29,8 @@ double EffectiveHamiltonian::expValue(const opsVec& ops,
                                       std::vector<TheBlock>& leftBlocks,
                                       std::vector<TheBlock>& rightBlocks)
 {
-    opsMap sysBlockOps,	// observable operators that will act on the system block
-           envBlockOps;	// same for environment block
-    int lSFinal = lSupFinal / 2 - 1;			// final size of system block
+    opsMap sysBlockOps, // observable operators that will act on the system block
+           envBlockOps; // same for environment block
     MatrixDd lFreeSite = Id_d,
              rFreeSite = Id_d;
     bool opAtlFreeSite = false,
@@ -41,7 +47,7 @@ double EffectiveHamiltonian::expValue(const opsVec& ops,
         }
         else if(site == lSFinal + 1)
         {
-            rFreeSite *= opToEvaluate.first;		// and right free-site operator
+            rFreeSite *= opToEvaluate.first;    // and right free-site operator
             opAtrFreeSite = true;
         }
         else
@@ -49,7 +55,7 @@ double EffectiveHamiltonian::expValue(const opsVec& ops,
     };
     if(sysBlockOps.empty() && !opAtlFreeSite)
                         // observables in right-hand half of superblock case
-        if(envBlockOps.empty())	
+        if(envBlockOps.empty())
         {                   // right-hand free site single-site observable case
             psiGround.resize(mSFinal * d * mSFinal, d);
             return (psiGround
@@ -62,16 +68,17 @@ double EffectiveHamiltonian::expValue(const opsVec& ops,
             psiGround.resize(mSFinal * d, mSFinal * d);
             return (psiGround.adjoint()
                     * psiGround
-                    * kp(rhoBasisRep(envBlockOps, rightBlocks), rFreeSite).transpose()
+                    * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal),
+                         rFreeSite).transpose()
                    ).trace();
         }
     else if(envBlockOps.empty() && !opAtrFreeSite)
                             // observables in left-hand half of superblock case
-        if(!opAtlFreeSite)				// all observables in system block case
+        if(!opAtlFreeSite)              // all observables in system block case
         {
             psiGround.resize(mSFinal, d * mSFinal * d);
             return (psiGround.adjoint()
-                    * rhoBasisRep(sysBlockOps, leftBlocks)
+                    * rhoBasisRep(sysBlockOps, leftBlocks, lSFinal)
                     * psiGround
                    ).trace();
         }
@@ -79,7 +86,8 @@ double EffectiveHamiltonian::expValue(const opsVec& ops,
         {
             psiGround.resize(mSFinal * d, mSFinal * d);
             return (psiGround.adjoint()
-                    * kp(rhoBasisRep(sysBlockOps, leftBlocks), lFreeSite)
+                    * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal),
+                         lFreeSite)
                     * psiGround
                    ).trace();
         }
@@ -87,9 +95,10 @@ double EffectiveHamiltonian::expValue(const opsVec& ops,
     {
         psiGround.resize(mSFinal * d, mSFinal * d);
         return (psiGround.adjoint()
-                * kp(rhoBasisRep(sysBlockOps, leftBlocks), lFreeSite)
+                * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal), lFreeSite)
                 * psiGround
-                * kp(rhoBasisRep(envBlockOps, rightBlocks), rFreeSite).transpose()
+                * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal), rFreeSite)
+                  .transpose()
                ).trace();
     };
 };
@@ -98,24 +107,25 @@ void EffectiveHamiltonian::placeOp(const std::pair<MatrixDd, int>& op,
                                    opsMap& blockSide, bool systemSide)
 {
     int lhSite = (systemSide ? op.second : lSupFinal - 1 - op.second);
-    if(blockSide.count(lhSite))			// already an observable at this site?
+    if(blockSide.count(lhSite))      // already an observable at this site?
         blockSide[lhSite] *= op.first;
     else
         blockSide.insert(std::pair<int, MatrixDd>(lhSite, op.first));
 };
 
 MatrixXd EffectiveHamiltonian::rhoBasisRep(const opsMap& blockOps,
-                                           std::vector<TheBlock>& blocks) const
+                                           std::vector<TheBlock>& blocks,
+                                           int blockSize) const
 {
     if(blockOps.empty())
-        return Id(blocks[lSupFinal / 2 - 2].m);
+        return Id(blocks[blockSize - 1].m);
     MatrixXd rhoBasisBlockOp;
     const auto firstOp = blockOps.begin();
                 // first nontrivial site operator at which to start tensoring
     auto currentOp = firstOp;
     const auto firstSite = blocks.begin();
     auto currentSite = firstSite;
-    if(firstOp -> first == 0)		// one-site observable at first site?
+    if(firstOp -> first == 0)       // one-site observable at first site?
     {
         rhoBasisBlockOp = firstOp -> second;
         currentOp++;
@@ -126,7 +136,7 @@ MatrixXd EffectiveHamiltonian::rhoBasisRep(const opsMap& blockOps,
         rhoBasisBlockOp = Id(currentSite -> m);
     };
     const auto opsEnd = blockOps.end();
-    for(const auto end = firstSite + lSupFinal / 2 - 2; currentSite != end;
+    for(const auto end = firstSite + (blockSize - 1); currentSite != end;
         currentSite++)
     {
         MatrixXd primeBasisBlockOp = kp(rhoBasisBlockOp,

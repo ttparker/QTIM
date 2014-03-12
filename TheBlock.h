@@ -22,7 +22,7 @@ class TheBlock
                            const TheBlock& beforeCompBlock = TheBlock());
                                                      // performs each DMRG step
         static void setLancTolerance(double newLancTolerance);
-        void randomSeed(),                                    // for iDMRG case
+        void randomSeed(const TheBlock& compBlock),           // for iDMRG case
              reflectPredictedPsi();            // when you reach edge of system
         EffectiveHamiltonian createHSuperFinal(const TheBlock& compBlock,
                                                int skips) const;
