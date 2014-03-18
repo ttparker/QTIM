@@ -30,12 +30,11 @@ TheBlock TheBlock::nextBlock(TheBlock& compBlock, bool exactDiag,
                        + ham.blockSiteJoin(rhoBasisH2)
                        + kp(Id(m), ham.h1);            // expanded system block
     std::vector<MatrixXd> tempRhoBasisH2;
-    int indepCouplingOperators = ham.couplingConstants.size();
     tempRhoBasisH2.reserve(indepCouplingOperators);
     int md = m * d;
     if(exactDiag)
     { // if near edge of system, no truncation necessary so skip DMRG algorithm
-        for(auto op = ham.h2.begin(), end = ham.h2.begin() + indepCouplingOperators;
+        for(auto op = ham.h2.begin(), end = op + indepCouplingOperators;
             op != end; op++)
             tempRhoBasisH2.push_back(kp(Id(m), *op));
         return TheBlock(md, hSprime, tempRhoBasisH2);
@@ -71,9 +70,9 @@ TheBlock TheBlock::nextBlock(TheBlock& compBlock, bool exactDiag,
     SelfAdjointEigenSolver<MatrixXd> rhoSolver(psiGround * psiGround.adjoint());
                                              // find density matrix eigenstates
     primeToRhoBasis = rhoSolver.eigenvectors().rightCols(mMax);
-                                             // construct change-of-basis matrix
-    for(auto op = ham.h2.begin(), end = ham.h2.begin() + indepCouplingOperators;
-        op != end; op++)
+                                            // construct change-of-basis matrix
+    for(auto op = ham.h2.begin(), end = op + indepCouplingOperators; op != end;
+        op++)
         tempRhoBasisH2.push_back(changeBasis(kp(Id(m), *op)));
     if(infiniteStage)                // copy primeToRhoBasis to reflected block
         compBlock.primeToRhoBasis = primeToRhoBasis;
