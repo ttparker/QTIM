@@ -18,8 +18,7 @@ TheBlock::TheBlock(const Hamiltonian& hamIn, int mMaxIn) : hS(hamIn.h1), m(d)
     firstfDMRGStep = true;
     ham = hamIn;
     mMax = mMaxIn;
-    rhoBasisH2.assign(ham.h2.begin(),
-                      ham.h2.begin() + ham.couplingConstants.size());
+    rhoBasisH2.assign(ham.h2.begin(), ham.h2.begin() + indepCouplingOperators);
 };
 
 TheBlock TheBlock::nextBlock(TheBlock& compBlock, bool exactDiag,
