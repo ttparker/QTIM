@@ -5,8 +5,8 @@ using namespace Eigen;
 
 EffectiveHamiltonian::EffectiveHamiltonian(const MatrixXd& matFinal,
                                            int lSupFinal, int mSFinal,
-                                           int skips)
-    : lSupFinal(lSupFinal), mSFinal(mSFinal), skips(skips)
+                                           int mEFinal, int skips)
+    : lSupFinal(lSupFinal), mSFinal(mSFinal), mEFinal(mEFinal), skips(skips)
 {
     VectorXd seed = TheBlock::psiGround;
     gsEnergy = lanczos(matFinal, seed, TheBlock::lancTolerance);
@@ -52,7 +52,7 @@ double EffectiveHamiltonian::expValue(const opsVec& ops,
                         // observables in right-hand half of superblock case
         if(envBlockOps.empty())
         {                   // right-hand free site single-site observable case
-            psiGround.resize(mSFinal * d * mSFinal, d);
+            psiGround.resize(mSFinal * d * mEFinal, d);
             return (psiGround
                     * rFreeSite.transpose()
                     * psiGround.adjoint()
@@ -60,7 +60,7 @@ double EffectiveHamiltonian::expValue(const opsVec& ops,
         }
         else
         {
-            psiGround.resize(mSFinal * d, mSFinal * d);
+            psiGround.resize(mSFinal * d, mEFinal * d);
             return (psiGround.adjoint()
                     * psiGround
                     * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal),
@@ -71,7 +71,7 @@ double EffectiveHamiltonian::expValue(const opsVec& ops,
                             // observables in left-hand half of superblock case
         if(!opAtlFreeSite)              // all observables in system block case
         {
-            psiGround.resize(mSFinal, d * mSFinal * d);
+            psiGround.resize(mSFinal, d * mEFinal * d);
             return (psiGround.adjoint()
                     * rhoBasisRep(sysBlockOps, leftBlocks, lSFinal)
                     * psiGround
@@ -79,7 +79,7 @@ double EffectiveHamiltonian::expValue(const opsVec& ops,
         }
         else
         {
-            psiGround.resize(mSFinal * d, mSFinal * d);
+            psiGround.resize(mSFinal * d, mEFinal * d);
             return (psiGround.adjoint()
                     * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal),
                          lFreeSite)
@@ -88,7 +88,7 @@ double EffectiveHamiltonian::expValue(const opsVec& ops,
         }
     else                    // observables in both halves of superblock case
     {
-        psiGround.resize(mSFinal * d, mSFinal * d);
+        psiGround.resize(mSFinal * d, mEFinal * d);
         return (psiGround.adjoint()
                 * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal), lFreeSite)
                 * psiGround
