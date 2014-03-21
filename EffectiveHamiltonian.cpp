@@ -9,7 +9,7 @@ EffectiveHamiltonian::EffectiveHamiltonian(const MatrixXd& matFinal,
     : lSupFinal(lSupFinal), mSFinal(mSFinal), skips(skips)
 {
     VectorXd seed = TheBlock::psiGround;
-    storedGSEnergy = lanczos(matFinal, seed, TheBlock::lancTolerance);
+    gsEnergy = lanczos(matFinal, seed, TheBlock::lancTolerance);
     psiGround = seed;
     if(lSupFinal % 2)
     {
@@ -18,11 +18,6 @@ EffectiveHamiltonian::EffectiveHamiltonian(const MatrixXd& matFinal,
     }
     else
         lSFinal = lEFinal = lSupFinal / 2 - 1;
-};
-
-double EffectiveHamiltonian::gsEnergy() const
-{
-    return storedGSEnergy;
 };
 
 double EffectiveHamiltonian::expValue(const opsVec& ops,

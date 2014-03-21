@@ -12,16 +12,16 @@ typedef std::map<int, MatrixDd, std::less<int>,
 class EffectiveHamiltonian
 {
     public:
+        double gsEnergy;                         // returns ground-state energy
+        
         EffectiveHamiltonian(const Eigen::MatrixXd& matFinal, int lSupFinal,
                              int mSFinal, int skips);
-        double gsEnergy() const,                 // returns ground-state energy
-               expValue(const opsVec& ops, std::vector<TheBlock>& leftBlocks,
+        double expValue(const opsVec& ops, std::vector<TheBlock>& leftBlocks,
                         std::vector<TheBlock>& rightBlocks);
         // calculates exectation value of a combination of single-site operators
 
     private:
         int lSupFinal;                                     // final system size
-        double storedGSEnergy;
         rmMatrixXd psiGround;                  // final superblock ground state
         int lSFinal,                        // final length of the system block
             lEFinal,                   // final length of the environment block

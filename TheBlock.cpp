@@ -97,11 +97,6 @@ TheBlock TheBlock::nextBlock(TheBlock& compBlock, bool exactDiag,
                                   // save expanded-block operators in new basis
 };
 
-void TheBlock::setLancTolerance(double newLancTolerance)
-{
-    lancTolerance = newLancTolerance;
-};
-
 void TheBlock::randomSeed(const TheBlock& compBlock)
 {
     psiGround = VectorXd::Random(m * d * compBlock.m * d);
