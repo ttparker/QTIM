@@ -14,11 +14,11 @@ $(PROG): $(OBJS)
 
 EffectiveHamiltonian.o: $(COMMONHS2) Lanczos.h
 
-FreeFunctions.o: $(COMMONHS2)
+FreeFunctions.o: $(COMMONHS2) GlobalPrecisionParameters.h
 
-Lanczos.o: $(COMMONHS1)
+Lanczos.o: $(COMMONHS1) GlobalPrecisionParameters.h
 
-main.o: $(COMMONHS2) FreeFunctions.h ObservableOps.h
+main.o: $(COMMONHS2) FreeFunctions.h GlobalPrecisionParameters.h ObservableOps.h
 
 $(PROG).o: $(COMMONHS1) Hamiltonian.h
 

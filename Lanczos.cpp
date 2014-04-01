@@ -1,5 +1,6 @@
 #include <cmath>
 #include "main.h"
+#include "GlobalPrecisionParameters.h"
 
 extern "C"
 {
@@ -16,8 +17,8 @@ double lanczos(const MatrixXd& mat, VectorXd& seed, double lancTolerance)
     int matSize = mat.rows();
     if(matSize == 1)
         return mat(0, 0);
-    const int minIters = std::min(matSize, 3),
-              maxIters = std::min(matSize, 100);
+    const int minIters = std::min(matSize, globalMinLancIters),
+              maxIters = std::min(matSize, globalMaxLancIters);
     std::vector<double> a,
                         b;
     a.reserve(minIters);

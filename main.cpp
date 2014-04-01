@@ -1,6 +1,7 @@
 #include <time.h>
 #include <fstream>
 #include "FreeFunctions.h"
+#include "GlobalPrecisionParameters.h"
 
 using namespace Eigen;
 
@@ -54,7 +55,8 @@ int main()
                 << "\nCalculate two-site observables? "
                 << (calcTwoSiteExpValues ? "Yes" : "No")
                 << "\nIndices of two-site observables: " << indexOfFirstTwoSiteOp
-                << " " << indexOfSecondTwoSiteOp << std::endl;
+                << " " << indexOfSecondTwoSiteOp << "\nObservables threshold: "
+                << observableThreshold << std::endl;
     else
     {
         std::cerr << "Couldn't open output files." << std::endl;
