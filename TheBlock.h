@@ -13,13 +13,14 @@ class TheBlock
 {
     public:
         static double lancTolerance;
+        Eigen::MatrixXd primeToRhoBasis;              // change-of-basis matrix
         
         TheBlock(int m = 0,
                  const Eigen::MatrixXd& hS = Eigen::MatrixXd(),
                  const std::vector<Eigen::MatrixXd>& rhoBasisH2
                      = std::vector<Eigen::MatrixXd>());
         TheBlock(const Hamiltonian& ham, int mMax);
-        TheBlock nextBlock(TheBlock& compBlock, bool exactDiag = true,
+        TheBlock nextBlock(const TheBlock& compBlock, bool exactDiag = true,
                            bool infiniteStage = true,
                            const TheBlock& beforeCompBlock = TheBlock());
                                                      // performs each DMRG step
@@ -36,7 +37,6 @@ class TheBlock
         int m;                              // number of states stored in block
         static rmMatrixXd psiGround;
         static int mMax;                   // max size of effective Hamiltonian
-        Eigen::MatrixXd primeToRhoBasis;              // change-of-basis matrix
         static bool firstfDMRGStep;
                      // slight abuse of nomeclature - true during iDMRG as well
         
