@@ -40,20 +40,17 @@ TheBlock TheBlock::nextBlock(const TheBlock& compBlock, bool exactDiag,
     };
     int compm = compBlock.m,
         compmd = compm * d;
-    VectorXd seed;
     if(infiniteStage)
     {
-        seed = VectorXd::Random(md * md);
-        seed /= seed.norm();
+        psiGround = VectorXd::Random(md * md);
+        psiGround /= psiGround.norm();
     }
     else if(firstfDMRGStep)
     {
-        seed = VectorXd::Random(md * compmd);
-        seed /= seed.norm();
+        psiGround = VectorXd::Random(md * compmd);
+        psiGround /= psiGround.norm();
         firstfDMRGStep = false;
     }
-    else
-        seed = psiGround;
     lanczos(infiniteStage ?
             MatrixXd(kp(hSprime, Id(md))
             + ham.siteSiteJoin(m, m)
@@ -63,8 +60,7 @@ TheBlock TheBlock::nextBlock(const TheBlock& compBlock, bool exactDiag,
             + kp(Id(md), kp(Id(compm), ham.h1)
                          + ham.blockSiteJoin(compBlock.rhoBasisH2)
                          + kp(compBlock.hS, Id_d))),
-            seed, lancTolerance);	                  // calculate ground state
-    psiGround = seed;
+            psiGround, lancTolerance);	                  // calculate ground state
     psiGround.resize(md, infiniteStage ? md : compmd);
     SelfAdjointEigenSolver<MatrixXd> rhoSolver(psiGround * psiGround.adjoint());
                                              // find density matrix eigenstates

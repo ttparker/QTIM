@@ -12,7 +12,7 @@ extern "C"
 
 using namespace Eigen;
 
-double lanczos(const MatrixXd& mat, VectorXd& seed, double lancTolerance)
+double lanczos(const MatrixXd& mat, rmMatrixXd& seed, double lancTolerance)
 {
     int matSize = mat.rows();
     if(matSize == 1)
@@ -26,7 +26,7 @@ double lanczos(const MatrixXd& mat, VectorXd& seed, double lancTolerance)
     VectorXd x = seed;
     MatrixXd basisVecs = x;
     x.noalias() = mat * basisVecs;
-    a.push_back(seed.dot(x));
+    a.push_back(seed.col(0).dot(x));
     b.push_back(0.);
     VectorXd oldGS;
     int i = 0;                                      // iteration counter
@@ -94,7 +94,7 @@ double lanczos(const MatrixXd& mat, VectorXd& seed, double lancTolerance)
         seed.noalias() = basisVecs * Z;
         seed /= seed.norm();
     } while(N < minIters ||
-            (std::abs(1 - std::abs(seed.dot(oldGS))) > lancTolerance
+            (std::abs(1 - std::abs(seed.col(0).dot(oldGS))) > lancTolerance
              && N < maxIters));
     if(N == maxIters)
     {

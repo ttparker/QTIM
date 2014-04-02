@@ -9,5 +9,7 @@
 #include "GlobalHamiltonianParameters.h"
 
 typedef Eigen::Matrix<double, d, d> MatrixDd;
+typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+    rmMatrixXd;
 
 #endif

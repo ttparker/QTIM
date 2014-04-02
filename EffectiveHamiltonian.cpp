@@ -6,11 +6,10 @@ using namespace Eigen;
 EffectiveHamiltonian::EffectiveHamiltonian(const MatrixXd& matFinal,
                                            int lSupFinal, int mSFinal,
                                            int mEFinal, int skips)
-    : lSupFinal(lSupFinal), mSFinal(mSFinal), mEFinal(mEFinal), skips(skips)
+    : lSupFinal(lSupFinal), psiGround(TheBlock::psiGround), mSFinal(mSFinal),
+      mEFinal(mEFinal), skips(skips)
 {
-    VectorXd seed = TheBlock::psiGround;
-    gsEnergy = lanczos(matFinal, seed, TheBlock::lancTolerance);
-    psiGround = seed;
+    gsEnergy = lanczos(matFinal, psiGround, TheBlock::lancTolerance);
     if(lSupFinal % 2)
     {
         lSFinal = (lSupFinal - 1)/2;
