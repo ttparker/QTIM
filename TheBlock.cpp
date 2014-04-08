@@ -11,9 +11,9 @@ bool TheBlock::firstfDMRGStep;
 
 TheBlock::TheBlock(int m, const MatrixXd& hS,
                    const std::vector<MatrixXd>& rhoBasisH2)
-                   : hS(hS), rhoBasisH2(rhoBasisH2), m(m) {};
+                   : m(m), hS(hS), rhoBasisH2(rhoBasisH2) {};
 
-TheBlock::TheBlock(const Hamiltonian& hamIn, int mMaxIn) : hS(hamIn.h1), m(d)
+TheBlock::TheBlock(const Hamiltonian& hamIn, int mMaxIn) : m(d), hS(hamIn.h1)
 {
     firstfDMRGStep = true;
     ham = hamIn;
@@ -41,16 +41,12 @@ TheBlock TheBlock::nextBlock(const TheBlock& compBlock, bool exactDiag,
     int compm = compBlock.m,
         compmd = compm * d;
     if(infiniteStage)
-    {
-        psiGround = VectorXd::Random(md * md);
-        psiGround /= psiGround.norm();
-    }
+        randomSeed(m);
     else if(firstfDMRGStep)
     {
-        psiGround = VectorXd::Random(md * compmd);
-        psiGround /= psiGround.norm();
+        randomSeed(compm);
         firstfDMRGStep = false;
-    }
+    };
     lanczos(infiniteStage ?
             MatrixXd(kp(hSprime, Id(md))
             + ham.siteSiteJoin(m, m)
@@ -91,9 +87,9 @@ TheBlock TheBlock::nextBlock(const TheBlock& compBlock, bool exactDiag,
                                   // save expanded-block operators in new basis
 };
 
-void TheBlock::randomSeed(const TheBlock& compBlock)
+void TheBlock::randomSeed(int compm)
 {
-    psiGround = VectorXd::Random(m * d * compBlock.m * d);
+    psiGround = VectorXd::Random(m * d * compm * d);
     psiGround /= psiGround.norm();
 };
 

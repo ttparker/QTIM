@@ -9,6 +9,7 @@ class EffectiveHamiltonian;
 class TheBlock
 {
     public:
+        int m;                              // number of states stored in block
         static double lancTolerance;
         Eigen::MatrixXd primeToRhoBasis;              // change-of-basis matrix
         
@@ -21,7 +22,7 @@ class TheBlock
                            bool infiniteStage = true,
                            const TheBlock& beforeCompBlock = TheBlock());
                                                      // performs each DMRG step
-        void randomSeed(const TheBlock& compBlock),           // for iDMRG case
+        void randomSeed(int compm),                           // for iDMRG case
              reflectPredictedPsi();            // when you reach edge of system
         EffectiveHamiltonian createHSuperFinal(const TheBlock& compBlock,
                                                int skips) const;
@@ -31,7 +32,6 @@ class TheBlock
         static Hamiltonian ham;
         std::vector<Eigen::MatrixXd> rhoBasisH2;
                                      // density-matrix-basis coupling operators
-        int m;                              // number of states stored in block
         static rmMatrixXd psiGround;
         static int mMax;                   // max size of effective Hamiltonian
         static bool firstfDMRGStep;
