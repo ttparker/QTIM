@@ -5,7 +5,7 @@
 using namespace Eigen;
 
 VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp, int rangeOfObservables,
-                          int currentLSys, EffectiveHamiltonian& hSuperFinal,
+                          int lSys, EffectiveHamiltonian& hSuperFinal,
                           std::vector<TheBlock>& leftBlocks,
                           std::vector<TheBlock>& rightBlocks,
                           std::ofstream& fileout)
@@ -13,7 +13,7 @@ VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp, int rangeOfObservables,
     opsVec ops;                     // list of observable single-site operators
     ops.push_back(std::make_pair(oneSiteOp, 0));
     VectorXd oneSiteVals(rangeOfObservables);
-    int start = (currentLSys - rangeOfObservables) / 2;
+    int start = (lSys - rangeOfObservables) / 2;
     for(int i = 0; i < rangeOfObservables; i++)
     {
         ops[0].second = start + i;
@@ -29,7 +29,7 @@ VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp, int rangeOfObservables,
 MatrixXd twoSiteExpValues(const MatrixDd& firstTwoSiteOp,
                           const MatrixDd& secondTwoSiteOp,
                           int rangeOfObservables,
-                          int currentLSys, EffectiveHamiltonian& hSuperFinal,
+                          int lSys, EffectiveHamiltonian& hSuperFinal,
                           std::vector<TheBlock>& leftBlocks,
                           std::vector<TheBlock>& rightBlocks,
                           std::ofstream& fileout)
@@ -40,7 +40,7 @@ MatrixXd twoSiteExpValues(const MatrixDd& firstTwoSiteOp,
     ops.push_back(std::make_pair(secondTwoSiteOp, 0));
     MatrixXd correlationFunction = MatrixXd::Zero(rangeOfObservables,
                                                   rangeOfObservables);
-    int start = (currentLSys - rangeOfObservables) / 2;
+    int start = (lSys - rangeOfObservables) / 2;
     for(int i = 0; i < rangeOfObservables; i++)
         for(int j = 0; j < rangeOfObservables; j++)
         {

@@ -4,14 +4,14 @@
 #include "EffectiveHamiltonian.h"
 
 Eigen::VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp,
-                                 int rangeOfObservables, int currentLSys,
+                                 int rangeOfObservables, int lSys,
                                  EffectiveHamiltonian& hSuperFinal,
                                  std::vector<TheBlock>& leftBlocks,
                                  std::vector<TheBlock>& rightBlocks,
                                  std::ofstream& fileout);
 Eigen::MatrixXd twoSiteExpValues(const MatrixDd& firstTwoSiteOp,
                                  const MatrixDd& secondTwoSiteOp,
-                                 int rangeOfObservables, int currentLSys,
+                                 int rangeOfObservables, int lSys,
                                  EffectiveHamiltonian& hSuperFinal,
                                  std::vector<TheBlock>& leftBlocks,
                                  std::vector<TheBlock>& rightBlocks,
