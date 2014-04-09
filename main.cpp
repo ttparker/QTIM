@@ -67,7 +67,7 @@ int main()
     for(int trial = 1; trial <= nTrials; trial++)
     {
         clock_t startTrial = clock();
-        std::cout << "Trial " << trial << ":" <<std::endl;
+        std::cout << "Trial " << trial << ":" << std::endl;
         std::ofstream fileout("Output/Trial_" + std::to_string(trial));
         fileout << "Trial " << trial << ":\n" << std::endl;
         
@@ -131,54 +131,67 @@ int main()
                       = TheBlock(ham, mMax);   // initialize the one-site block
         std::cout << "Performing iDMRG..." << std::endl;
             // note: this iDMRG code assumes parity symmetry of the Hamiltonian
+        rmMatrixXd psiGround;                     // seed for Lanczos algorithm
         for(int site = 0; site < skips; site++)                   // initial ED
             rightBlocks[site + 1] = leftBlocks[site + 1] 
-                                  = leftBlocks[site].nextBlock(rightBlocks[site]);
+                                  = leftBlocks[site].nextBlock(psiGround,
+                                                               TheBlock());
         TheBlock::lancTolerance = groundStateErrorTolerance
                                   * groundStateErrorTolerance / 2;
         for(int site = skips, end = lEFinal - 1; site < end; site++)   // iDMRG
         {
+            psiGround = randomSeed(leftBlocks[site].m * d
+                                   * leftBlocks[site].m * d);
             rightBlocks[site + 1] = leftBlocks[site + 1]
-                                  = leftBlocks[site].nextBlock(rightBlocks[site],
+                                  = leftBlocks[site].nextBlock(psiGround,
+                                                               TheBlock(),
                                                                false);
             rightBlocks[site].primeToRhoBasis = leftBlocks[site].primeToRhoBasis;
                                      // copy primeToRhoBasis to reflected block
         };
         if(oddSize)
+        {
+            psiGround = randomSeed(leftBlocks[lSFinal - 2].m * d
+                                   * leftBlocks[lSFinal - 2].m * d);
             leftBlocks[lSFinal - 1] = leftBlocks[lSFinal - 2]
-                                      .nextBlock(leftBlocks[lSFinal - 2],
+                                      .nextBlock(psiGround, TheBlock(),
                                                  completeED);
+        };
         if(nSweeps == 0 || completeED)
-            leftBlocks[lSFinal - 1].randomSeed(rightBlocks[lEFinal - 1].m);
+            psiGround = randomSeed(leftBlocks[lSFinal - 1].m * d
+                                   * rightBlocks[lEFinal - 1].m * d);
         else
         {
             std::cout << "Performing fDMRG..." << std::endl;
-            for(int i = 1; i <= nSweeps; i++)			// perform the fDMRG sweeps
+            psiGround = randomSeed(leftBlocks[lSFinal - 1].m * d
+                                   * rightBlocks[lEFinal - 1].m * d);
+            for(int i = 1; i <= nSweeps; i++)       // perform the fDMRG sweeps
             {
                 for(int site = lSFinal - 1, end = lSys - 4 - skips; site < end;
                     site++)
-                    leftBlocks[site + 1] = leftBlocks[site].nextBlock(
+                    leftBlocks[site + 1] = leftBlocks[site].nextBlock(psiGround,
                                            rightBlocks[lSys - 4 - site],
                                            false, false,
                                            rightBlocks[lSys - 5 - site]);
-                rightBlocks[skips].reflectPredictedPsi();
+                reflectPredictedPsi(psiGround, mMax, rightBlocks[skips].m);
                                // reflect the system to reverse sweep direction
                 for(int site = skips, end = lSys - 4 - skips; site < end; site++)
-                    rightBlocks[site + 1] = rightBlocks[site].nextBlock(
+                    rightBlocks[site + 1] = rightBlocks[site].nextBlock(psiGround,
                                             leftBlocks[lSys - 4 - site],
                                             false, false,
                                             leftBlocks[lSys - 5 - site]);
-                leftBlocks[skips].reflectPredictedPsi();
+                reflectPredictedPsi(psiGround, mMax, leftBlocks[skips].m);
                 for(int site = skips, end = lSFinal - 1; site < end; site++)
-                    leftBlocks[site + 1] = leftBlocks[site].nextBlock(
+                    leftBlocks[site + 1] = leftBlocks[site].nextBlock(psiGround,
                                            rightBlocks[lSys - 4 - site],
                                            false, false,
                                            rightBlocks[lSys - 5 - site]);
                 std::cout << "Sweep " << i << " complete." << std::endl;
             };
         };
-        EffectiveHamiltonian hSuperFinal = leftBlocks[lSFinal - 1]
-                      .createHSuperFinal(rightBlocks[lEFinal - 1], skips);
+        EffectiveHamiltonian hSuperFinal
+            = leftBlocks[lSFinal - 1].createHSuperFinal(rightBlocks[lEFinal - 1],
+                                                        psiGround, skips);
                                                // calculate ground-state energy
         fileout << "Ground state energy density = "
                 << hSuperFinal.gsEnergy / lSys << std::endl << std::endl;

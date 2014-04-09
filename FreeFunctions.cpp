@@ -4,6 +4,20 @@
 
 using namespace Eigen;
 
+rmMatrixXd randomSeed(int size)
+{
+    rmMatrixXd seed = rmMatrixXd::Random(size, 1);
+    seed /= seed.norm();
+    return seed;
+};
+
+void reflectPredictedPsi(rmMatrixXd& psiGround, int mMax, int m)
+{
+    psiGround.resize(mMax * d, m * d);
+    psiGround.transposeInPlace();
+    psiGround.resize(mMax * d * m * d, 1);
+};
+
 VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp, int rangeOfObservables,
                           int lSys, EffectiveHamiltonian& hSuperFinal,
                           std::vector<TheBlock>& leftBlocks,

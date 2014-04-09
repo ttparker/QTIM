@@ -3,6 +3,9 @@
 
 #include "EffectiveHamiltonian.h"
 
+rmMatrixXd randomSeed(int size);            // outputs random normalized vector
+void reflectPredictedPsi(rmMatrixXd& psiGround, int mMax, int m);
+                                               // when you reach edge of system
 Eigen::VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp,
                                  int rangeOfObservables, int lSys,
                                  EffectiveHamiltonian& hSuperFinal,

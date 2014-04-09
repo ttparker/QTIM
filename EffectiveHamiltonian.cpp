@@ -4,9 +4,10 @@
 using namespace Eigen;
 
 EffectiveHamiltonian::EffectiveHamiltonian(const MatrixXd& matFinal,
+                                           const rmMatrixXd& psiGroundIn,
                                            int lSupFinal, int mSFinal,
                                            int mEFinal, int skips)
-    : lSupFinal(lSupFinal), psiGround(TheBlock::psiGround), mSFinal(mSFinal),
+    : lSupFinal(lSupFinal), psiGround(psiGroundIn), mSFinal(mSFinal),
       mEFinal(mEFinal), skips(skips)
 {
     gsEnergy = lanczos(matFinal, psiGround, TheBlock::lancTolerance);
