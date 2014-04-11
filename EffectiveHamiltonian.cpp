@@ -5,12 +5,12 @@ using namespace Eigen;
 
 EffectiveHamiltonian::EffectiveHamiltonian(const MatrixXd& matFinal,
                                            const rmMatrixXd& psiGroundIn,
-                                           int lSupFinal, int mSFinal,
+                                           stepData data, int mSFinal,
                                            int mEFinal, int skips)
-    : lSupFinal(lSupFinal), psiGround(psiGroundIn), mSFinal(mSFinal),
+    : lSupFinal(data.ham.lSys), psiGround(psiGroundIn), mSFinal(mSFinal),
       mEFinal(mEFinal), skips(skips)
 {
-    gsEnergy = lanczos(matFinal, psiGround, TheBlock::lancTolerance);
+    gsEnergy = lanczos(matFinal, psiGround, data.lancTolerance);
     if(lSupFinal % 2)
     {
         lSFinal = (lSupFinal - 1)/2;

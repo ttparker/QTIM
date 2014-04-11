@@ -3,7 +3,6 @@
 
 const int d = 2,                              // size of one-site Hilbert space
           nCouplingConstants = 2,               // number of coupling constants
-          indepCouplingOperators = 2;
-                                    // number of independent coupling operators
+          indepCouplingOperators = 2; // number of independent coupling operators
 
 #endif

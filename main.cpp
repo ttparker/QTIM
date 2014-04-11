@@ -63,7 +63,8 @@ int main()
         exit(EXIT_FAILURE);
     };
     infoout.close();
-    Hamiltonian ham;			// initialize the system's Hamiltonian
+    stepData data; // this struct will contain most of the important parameters
+    data.compBlock = data.beforeCompBlock = NULL;
     for(int trial = 1; trial <= nTrials; trial++)
     {
         clock_t startTrial = clock();
@@ -79,9 +80,8 @@ int main()
             filein >> couplingConstants[i];
         int rangeOfObservables;
         double groundStateErrorTolerance;
-        int mMax,                           // max number of stored states
-            nSweeps;                        // number of sweeps to be performed
-        filein >> rangeOfObservables >> groundStateErrorTolerance >> mMax
+        int nSweeps;                        // number of sweeps to be performed
+        filein >> rangeOfObservables >> groundStateErrorTolerance >> data.mMax
                >> nSweeps;
         if(rangeOfObservables == -1)
             rangeOfObservables = lSys;
@@ -90,12 +90,12 @@ int main()
         for(int i = 0; i < nCouplingConstants; i++)
             fileout << " " << couplingConstants[i];
         fileout << "\nLanczos tolerance: " << groundStateErrorTolerance
-                << "\nBond dimension: " << mMax << "\nNumber of sweeps: "
+                << "\nBond dimension: " << data.mMax << "\nNumber of sweeps: "
                 << nSweeps << std::endl << std::endl;
-        ham.setParams(couplingConstants, lSys);
+        data.ham.setParams(couplingConstants, lSys);
         int skips = 0,
             runningKeptStates = d * d;
-        for(; runningKeptStates <= mMax; skips++)
+        for(; runningKeptStates <= data.mMax; skips++)
             runningKeptStates *= d;  // find how many edge sites can be skipped
         bool oddSize = lSys % 2;
         int lSFinal,                        // final length of the system block
@@ -110,7 +110,7 @@ int main()
         bool completeED = false;
         if(skips + 1 >= lSFinal)
         {
-            if(skips + 1 == lSFinal && runningKeptStates == mMax * d)
+            if(skips + 1 == lSFinal && runningKeptStates == data.mMax * d)
             {
                 std::cout << "Note: the bond dimension is large enough to "
                           << "perform exact diagonalization." << std::endl;
@@ -127,25 +127,28 @@ int main()
         std::vector<TheBlock> leftBlocks(lSys - 2 - skips),
                               rightBlocks(lSys - 2 - skips);
              // initialize system - the last block is only used for odd-size ED
-        leftBlocks[0] = rightBlocks[0]
-                      = TheBlock(ham, mMax);   // initialize the one-site block
+        TheBlock *leftBlocksStart = leftBlocks.data(),
+                 *rightBlocksStart = rightBlocks.data();
+        leftBlocks[0] = rightBlocks[0] = TheBlock(data.ham);
+                                               // initialize the one-site block
         std::cout << "Performing iDMRG..." << std::endl;
             // note: this iDMRG code assumes parity symmetry of the Hamiltonian
+        data.exactDiag = true;
+        data.infiniteStage = true;
+        data.lancTolerance = groundStateErrorTolerance
+                             * groundStateErrorTolerance / 2;
         rmMatrixXd psiGround;                     // seed for Lanczos algorithm
         for(int site = 0; site < skips; site++)                   // initial ED
             rightBlocks[site + 1] = leftBlocks[site + 1] 
-                                  = leftBlocks[site].nextBlock(psiGround,
-                                                               TheBlock());
-        TheBlock::lancTolerance = groundStateErrorTolerance
-                                  * groundStateErrorTolerance / 2;
+                                  = leftBlocks[site].nextBlock(data, psiGround);
+        data.exactDiag = completeED;
         for(int site = skips, end = lEFinal - 1; site < end; site++)   // iDMRG
         {
+            data.compBlock = rightBlocksStart + site;
             psiGround = randomSeed(leftBlocks[site].m * d
                                    * leftBlocks[site].m * d);
             rightBlocks[site + 1] = leftBlocks[site + 1]
-                                  = leftBlocks[site].nextBlock(psiGround,
-                                                               TheBlock(),
-                                                               false);
+                                  = leftBlocks[site].nextBlock(data, psiGround);
             rightBlocks[site].primeToRhoBasis = leftBlocks[site].primeToRhoBasis;
                                      // copy primeToRhoBasis to reflected block
         };
@@ -154,8 +157,7 @@ int main()
             psiGround = randomSeed(leftBlocks[lSFinal - 2].m * d
                                    * leftBlocks[lSFinal - 2].m * d);
             leftBlocks[lSFinal - 1] = leftBlocks[lSFinal - 2]
-                                      .nextBlock(psiGround, TheBlock(),
-                                                 completeED);
+                                          .nextBlock(data, psiGround);
         };
         if(nSweeps == 0 || completeED)
             psiGround = randomSeed(leftBlocks[lSFinal - 1].m * d
@@ -163,35 +165,42 @@ int main()
         else
         {
             std::cout << "Performing fDMRG..." << std::endl;
+            data.infiniteStage = false;
             psiGround = randomSeed(leftBlocks[lSFinal - 1].m * d
                                    * rightBlocks[lEFinal - 1].m * d);
             for(int i = 1; i <= nSweeps; i++)       // perform the fDMRG sweeps
             {
                 for(int site = lSFinal - 1, end = lSys - 4 - skips; site < end;
                     site++)
-                    leftBlocks[site + 1] = leftBlocks[site].nextBlock(psiGround,
-                                           rightBlocks[lSys - 4 - site],
-                                           false, false,
-                                           rightBlocks[lSys - 5 - site]);
-                reflectPredictedPsi(psiGround, mMax, rightBlocks[skips].m);
+                {
+                    data.compBlock = rightBlocksStart + (lSys - 4 - site);
+                    data.beforeCompBlock = rightBlocksStart + (lSys - 5 - site);
+                    leftBlocks[site + 1] = leftBlocks[site].nextBlock(data,
+                                                                      psiGround);
+                };
+                reflectPredictedPsi(psiGround, data.mMax, rightBlocks[skips].m);
                                // reflect the system to reverse sweep direction
                 for(int site = skips, end = lSys - 4 - skips; site < end; site++)
-                    rightBlocks[site + 1] = rightBlocks[site].nextBlock(psiGround,
-                                            leftBlocks[lSys - 4 - site],
-                                            false, false,
-                                            leftBlocks[lSys - 5 - site]);
-                reflectPredictedPsi(psiGround, mMax, leftBlocks[skips].m);
+                {
+                    data.compBlock = leftBlocksStart + (lSys - 4 - site);
+                    data.beforeCompBlock = leftBlocksStart + (lSys - 5 - site);
+                    rightBlocks[site + 1] = rightBlocks[site].nextBlock(data,
+                                                                        psiGround);
+                };
+                reflectPredictedPsi(psiGround, data.mMax, leftBlocks[skips].m);
                 for(int site = skips, end = lSFinal - 1; site < end; site++)
-                    leftBlocks[site + 1] = leftBlocks[site].nextBlock(psiGround,
-                                           rightBlocks[lSys - 4 - site],
-                                           false, false,
-                                           rightBlocks[lSys - 5 - site]);
+                {
+                    data.compBlock = rightBlocksStart + (lSys - 4 - site);
+                    data.beforeCompBlock = rightBlocksStart + (lSys - 5 - site);
+                    leftBlocks[site + 1] = leftBlocks[site].nextBlock(data,
+                                                                      psiGround);
+                };
                 std::cout << "Sweep " << i << " complete." << std::endl;
             };
         };
+        data.compBlock = rightBlocksStart + (lEFinal - 1);
         EffectiveHamiltonian hSuperFinal
-            = leftBlocks[lSFinal - 1].createHSuperFinal(rightBlocks[lEFinal - 1],
-                                                        psiGround, skips);
+            = leftBlocks[lSFinal - 1].createHSuperFinal(data, psiGround, skips);
                                                // calculate ground-state energy
         fileout << "Ground state energy density = "
                 << hSuperFinal.gsEnergy / lSys << std::endl << std::endl;

@@ -8,6 +8,8 @@
 class Hamiltonian
 {
     public:
+        int lSys;                                      // current system length
+        
         Hamiltonian();
         void setParams(const std::vector<double>& couplingConstants, int lSys);
         
@@ -18,7 +20,6 @@ class Hamiltonian
         std::vector<MatrixDd, Eigen::aligned_allocator<MatrixDd>> h2;
                                                // site-basis coupling operators
         MatrixDd h1;                                 // single-site Hamiltonian
-        int lSys;                                      // current system length
         
         Eigen::MatrixXd
             blockSiteJoin(const std::vector<Eigen::MatrixXd>& rhoBasisH2) const,
