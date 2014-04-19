@@ -4,18 +4,19 @@
 
 using namespace Eigen;
 
-rmMatrixXd randomSeed(int size)
+rmMatrixXd randomSeed(const TheBlock& leftBlock, const TheBlock& rightBlock)
 {
-    rmMatrixXd seed = rmMatrixXd::Random(size, 1);
+    rmMatrixXd seed = rmMatrixXd::Random(leftBlock.m * d * rightBlock.m * d, 1);
     seed /= seed.norm();
     return seed;
 };
 
-void reflectPredictedPsi(rmMatrixXd& psiGround, int mMax, int m)
+void reflectPredictedPsi(rmMatrixXd& psiGround, const TheBlock& bigBlock,
+                         const TheBlock& littleBlock)
 {
-    psiGround.resize(mMax * d, m * d);
+    psiGround.resize(bigBlock.m * d, littleBlock.m * d);
     psiGround.transposeInPlace();
-    psiGround.resize(mMax * d * m * d, 1);
+    psiGround.resize(bigBlock.m * d * littleBlock.m * d, 1);
 };
 
 VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp, int rangeOfObservables,

@@ -14,7 +14,7 @@ class Hamiltonian
         void setParams(const std::vector<double>& couplingConstants, int lSys);
         
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-        
+    
     private:
         std::vector<double> couplingConstants;
         std::vector<MatrixDd, Eigen::aligned_allocator<MatrixDd>> h2;
