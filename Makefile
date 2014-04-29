@@ -2,9 +2,9 @@ PROG = QTIM
 CXX = g++
 CXXFLAGS = -Wall -Wextra -O3 -std=c++11 -march=native -I ~/Eigen_3.2.0 $(DEBUG)
 LIBS = -llapack
-OBJS = EffectiveHamiltonian.o FreeFunctions.o Lanczos.o main.o $(PROG).o TheBlock.o
+OBJS = FinalSuperblock.o FreeFunctions.o Lanczos.o main.o $(PROG).o TheBlock.o
 COMMONHS1 = GlobalHamiltonianParameters.h main.h
-COMMONHS2 = $(COMMONHS1) Hamiltonian.h TheBlock.h EffectiveHamiltonian.h
+COMMONHS2 = $(COMMONHS1) Hamiltonian.h TheBlock.h FinalSuperblock.h
 light = rm -f *.cpp~ *.h~ Makefile~
 git = rm -f $(PROG) ./Output/*
 deep = $(git) *.o
@@ -12,7 +12,7 @@ deep = $(git) *.o
 $(PROG): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LIBS) -o $(PROG) $(OBJS)
 
-EffectiveHamiltonian.o: $(COMMONHS2) Lanczos.h
+FinalSuperblock.o: $(COMMONHS2) Lanczos.h
 
 FreeFunctions.o: $(COMMONHS2) GlobalPrecisionParameters.h
 

@@ -202,7 +202,7 @@ int main()
             };
         };
         data.compBlock = rightBlocksStart + (lEFinal - 1);
-        EffectiveHamiltonian hSuperFinal
+        FinalSuperblock hSuperFinal
             = leftBlocks[lSFinal - 1].createHSuperFinal(data, psiGround, skips);
                                                // calculate ground-state energy
         fileout << "Ground state energy density = "

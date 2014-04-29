@@ -1,12 +1,12 @@
-#include "EffectiveHamiltonian.h"
+#include "FinalSuperblock.h"
 #include "Lanczos.h"
 
 using namespace Eigen;
 
-EffectiveHamiltonian::EffectiveHamiltonian(const MatrixXd& matFinal,
-                                           const rmMatrixXd& psiGroundIn,
-                                           stepData data, int mSFinal,
-                                           int mEFinal, int skips)
+FinalSuperblock::FinalSuperblock(const MatrixXd& matFinal,
+                                 const rmMatrixXd& psiGroundIn,
+                                 stepData data, int mSFinal, int mEFinal,
+                                 int skips)
     : lSupFinal(data.ham.lSys), psiGround(psiGroundIn), mSFinal(mSFinal),
       mEFinal(mEFinal), skips(skips)
 {
@@ -20,9 +20,9 @@ EffectiveHamiltonian::EffectiveHamiltonian(const MatrixXd& matFinal,
         lSFinal = lEFinal = lSupFinal / 2 - 1;
 };
 
-double EffectiveHamiltonian::expValue(const opsVec& ops,
-                                      std::vector<TheBlock>& leftBlocks,
-                                      std::vector<TheBlock>& rightBlocks)
+double FinalSuperblock::expValue(const opsVec& ops,
+                                 std::vector<TheBlock>& leftBlocks,
+                                 std::vector<TheBlock>& rightBlocks)
 {
     opsMap sysBlockOps, // observable operators that will act on the system block
            envBlockOps; // same for environment block
@@ -98,8 +98,8 @@ double EffectiveHamiltonian::expValue(const opsVec& ops,
     };
 };
 
-void EffectiveHamiltonian::placeOp(const std::pair<MatrixDd, int>& op, 
-                                   opsMap& blockSide, bool systemSide)
+void FinalSuperblock::placeOp(const std::pair<MatrixDd, int>& op,
+                              opsMap& blockSide, bool systemSide)
 {
     int lhSite = (systemSide ? op.second : lSupFinal - 1 - op.second);
     if(blockSide.count(lhSite))      // already an observable at this site?
@@ -108,9 +108,9 @@ void EffectiveHamiltonian::placeOp(const std::pair<MatrixDd, int>& op,
         blockSide.insert(std::pair<int, MatrixDd>(lhSite, op.first));
 };
 
-MatrixXd EffectiveHamiltonian::rhoBasisRep(const opsMap& blockOps,
-                                           std::vector<TheBlock>& blocks,
-                                           int blockSize) const
+MatrixXd FinalSuperblock::rhoBasisRep(const opsMap& blockOps,
+                                      std::vector<TheBlock>& blocks,
+                                      int blockSize) const
 {
     if(blockOps.empty())
         return Id(blocks[blockSize - 1].m);

@@ -1,4 +1,4 @@
-#include "EffectiveHamiltonian.h"
+#include "FinalSuperblock.h"
 #include "Lanczos.h"
 
 using namespace Eigen;
@@ -70,20 +70,20 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixXd& psiGround)
                                   // save expanded-block operators in new basis
 };
 
-EffectiveHamiltonian TheBlock::createHSuperFinal(const stepData& data,
-                                                 const rmMatrixXd& psiGround,
-                                                 int skips) const
+FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
+                                            const rmMatrixXd& psiGround,
+                                            int skips) const
 {
     int compm = data.compBlock -> m;
-    return EffectiveHamiltonian(kp(kp(hS, Id_d)
-                                   + data.ham.blockSiteJoin(rhoBasisH2)
-                                   + kp(Id(m), data.ham.h1),
-                                   Id(compm * d))
-                                + data.ham.siteSiteJoin(m, compm)
-                                + kp(Id(m * d), kp(Id(compm), data.ham.h1)
-                                                + data.ham.blockSiteJoin(data.compBlock -> rhoBasisH2)
-                                                + kp(data.compBlock -> hS, Id_d)),
-                                psiGround, data, m, compm, skips);
+    return FinalSuperblock(kp(kp(hS, Id_d)
+                                 + data.ham.blockSiteJoin(rhoBasisH2)
+                                 + kp(Id(m), data.ham.h1),
+                                 Id(compm * d))
+                              + data.ham.siteSiteJoin(m, compm)
+                              + kp(Id(m * d), kp(Id(compm), data.ham.h1)
+                                              + data.ham.blockSiteJoin(data.compBlock -> rhoBasisH2)
+                                              + kp(data.compBlock -> hS, Id_d)),
+                              psiGround, data, m, compm, skips);
 };
 
 MatrixXd TheBlock::changeBasis(const MatrixXd& mat) const
