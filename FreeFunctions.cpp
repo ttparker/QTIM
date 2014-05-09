@@ -19,7 +19,7 @@ void reflectPredictedPsi(rmMatrixXd& psiGround, const TheBlock& bigBlock,
     psiGround.resize(bigBlock.m * d * littleBlock.m * d, 1);
 };
 
-VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp, int rangeOfObservables,
+VectorXd oneSiteExpValues(const obsMatrixD_t& oneSiteOp, int rangeOfObservables,
                           int lSys, FinalSuperblock& hSuperFinal,
                           std::vector<TheBlock>& leftBlocks,
                           std::vector<TheBlock>& rightBlocks,
@@ -41,8 +41,8 @@ VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp, int rangeOfObservables,
     return oneSiteVals;
 };
 
-MatrixXd twoSiteExpValues(const MatrixDd& firstTwoSiteOp,
-                          const MatrixDd& secondTwoSiteOp,
+MatrixXd twoSiteExpValues(const obsMatrixD_t& firstTwoSiteOp,
+                          const obsMatrixD_t& secondTwoSiteOp,
                           int rangeOfObservables,
                           int lSys, FinalSuperblock& hSuperFinal,
                           std::vector<TheBlock>& leftBlocks,
