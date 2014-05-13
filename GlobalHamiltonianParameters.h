@@ -6,8 +6,12 @@ const int d = 2,                              // size of one-site Hilbert space
           indepCouplingOperators = 2; // number of independent coupling operators
 
 // only one of these next two lines should be uncommented, depending on whether
-// the observable matrices have real or complex entries:
+// the Hamiltonian has real or complex elements:
+#define realHamiltonian
+// #define complexHamiltonian
 
+// only one of these next two lines should be uncommented, depending on whether
+// the observable matrices have real or complex elements:
 #define realObservables
 // #define complexObservables
 

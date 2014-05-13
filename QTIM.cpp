@@ -22,12 +22,13 @@ void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn, int 
     lSys = lSysIn;
 }
 
-MatrixXd Hamiltonian::blockSiteJoin(const std::vector<MatrixXd>& rhoBasisH2) const
+MatrixX_t Hamiltonian::blockSiteJoin(const std::vector<MatrixX_t>& rhoBasisH2)
+    const
 {
     return j * kp(rhoBasisSigmax, sigmax);
 };
 
-MatrixXd Hamiltonian::siteSiteJoin(int m1, int m2) const
+MatrixX_t Hamiltonian::siteSiteJoin(int m1, int m2) const
 {
     return j * kp(kp(Id(m1), sigmax), kp(Id(m2), sigmax));
 };

@@ -3,9 +3,9 @@
 
 #include "FinalSuperblock.h"
 
-rmMatrixXd randomSeed(const TheBlock& leftBlock, const TheBlock& rightBlock);
+rmMatrixX_t randomSeed(const TheBlock& leftBlock, const TheBlock& rightBlock);
                                             // outputs random normalized vector
-void reflectPredictedPsi(rmMatrixXd& psiGround, const TheBlock& bigBlock,
+void reflectPredictedPsi(rmMatrixX_t& psiGround, const TheBlock& bigBlock,
                          const TheBlock& littleBlock);
                                                // when you reach edge of system
 Eigen::VectorXd oneSiteExpValues(const obsMatrixD_t& oneSiteOp,
