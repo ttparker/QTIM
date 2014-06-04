@@ -90,7 +90,7 @@ double lanczos(const MatrixX_t& mat, rmMatrixX_t& seed, double lancTolerance)
         dstemr_(&JOBZ, &RANGE, &N, D.data(), E.data(), &VL, &VU, &IL, &IU, &M,
                 W.data(), Z.data(), &LDZ, &NZC, ISUPPZ.data(), &TRYRAC,
                 &optLWORK, &LWORK, &optLIWORK, &LIWORK, &INFO);
-                                    // query for optimal workspace allocations
+                                     // query for optimal workspace allocations
         LWORK = int(optLWORK);
         WORK.reserve(LWORK);
         LIWORK = optLIWORK;
@@ -98,8 +98,8 @@ double lanczos(const MatrixX_t& mat, rmMatrixX_t& seed, double lancTolerance)
         dstemr_(&JOBZ, &RANGE, &N, D.data(), E.data(), &VL, &VU, &IL, &IU, &M,
                 W.data(), Z.data(), &LDZ, &NZC, ISUPPZ.data(), &TRYRAC,
                 WORK.data(), &LWORK, IWORK.data(), &LIWORK, &INFO);
-        seed.noalias() = basisVecs * Z;
-        seed /= seed.norm();
+                                                      // calculate ground state
+        seed = (basisVecs * Z).normalized();
     } while(N < minIters ||
             (std::abs(1 - std::abs(seed.col(0).dot(oldGS))) > lancTolerance
              && N < maxIters));

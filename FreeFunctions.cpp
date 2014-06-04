@@ -6,9 +6,8 @@ using namespace Eigen;
 
 rmMatrixX_t randomSeed(const TheBlock& leftBlock, const TheBlock& rightBlock)
 {
-    rmMatrixX_t seed = rmMatrixX_t::Random(leftBlock.m * d * rightBlock.m * d, 1);
-    seed /= seed.norm();
-    return seed;
+    return rmMatrixX_t::Random(leftBlock.m * d * rightBlock.m * d, 1)
+           .normalized();
 };
 
 void reflectPredictedPsi(rmMatrixX_t& psiGround, const TheBlock& bigBlock,
