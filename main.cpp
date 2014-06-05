@@ -147,7 +147,7 @@ int main()
         for(int site = skips, end = lEFinal - 1; site < end; site++)   // iDMRG
         {
             data.compBlock = rightBlocksStart + site;
-            psiGround = randomSeed(leftBlocks[site], leftBlocks[site]);
+            psiGround = randomSeed(leftBlocks[site], rightBlocks[site]);
             rightBlocks[site + 1] = leftBlocks[site + 1]
                                   = leftBlocks[site].nextBlock(data, psiGround);
             rightBlocks[site].primeToRhoBasis = leftBlocks[site].primeToRhoBasis;
@@ -155,8 +155,9 @@ int main()
         };
         if(oddSize)
         {
+            data.compBlock = rightBlocksStart + (lSFinal - 2);
             psiGround = randomSeed(leftBlocks[lSFinal - 2],
-                                   leftBlocks[lSFinal - 2]);
+                                   rightBlocks[lSFinal - 2]);
             leftBlocks[lSFinal - 1] = leftBlocks[lSFinal - 2]
                                           .nextBlock(data, psiGround);
         };
