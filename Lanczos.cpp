@@ -36,8 +36,8 @@ double lanczos(const MatrixX_t& mat, rmMatrixX_t& seed, double lancTolerance)
     a.push_back(re(seed.col(0).dot(x)));
     b.push_back(0.);
     VectorX_t oldGS;
-    int i = 0;                                      // iteration counter
-    char JOBZ = 'V',                                // define dstemr arguments
+    int i = 0;                                             // iteration counter
+    char JOBZ = 'V',                                 // define dstemr arguments
          RANGE = 'I';
     int N = 1;
     std::vector<double> D,
@@ -64,6 +64,8 @@ double lanczos(const MatrixX_t& mat, rmMatrixX_t& seed, double lancTolerance)
     std::vector<int> IWORK;
     int LIWORK,
         INFO;
+    double gStateDiff;
+          // change in ground state vector across subsequent Lanczos iterations
     do
     {
         i++;
@@ -100,14 +102,22 @@ double lanczos(const MatrixX_t& mat, rmMatrixX_t& seed, double lancTolerance)
                 WORK.data(), &LWORK, IWORK.data(), &LIWORK, &INFO);
                                                       // calculate ground state
         seed = (basisVecs * Z).normalized();
-    } while(N < minIters ||
-            (std::abs(1 - std::abs(seed.col(0).dot(oldGS))) > lancTolerance
-             && N < maxIters));
-    if(N == maxIters)
+        gStateDiff = std::abs(1 - std::abs(seed.col(0).dot(oldGS)));
+    } while(N < minIters || (N < maxIters && gStateDiff > lancTolerance));
+    if(N == maxIters && gStateDiff > lancTolerance)
+                          // check if last iteration converges to an eigenstate
     {
-        std::cerr << "Lanczos algorithm failed to converge after " << N
-                  << " iterations." << std::endl;
-        exit(EXIT_FAILURE);
+        double gStateError = std::abs(1 - std::abs(seed.col(0)
+                                                   .dot((mat * seed).col(0)
+                                                        .normalized())));
+        if(gStateError > lancTolerance)
+        {
+            std::cerr << "Lanczos algorithm failed to converge after "
+                      << maxIters << " iterations. The inner product of the "
+                      << "final approximate ground state and its normalized "
+                      << "image differs from 1 by " << gStateError << std::endl;
+            exit(EXIT_FAILURE);
+        };
     };
     return W.front();
 };
