@@ -17,7 +17,7 @@ Hamiltonian::Hamiltonian()
 void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn, int lSysIn)
 {
     h1 << -h, 0.,
-          0., h;
+          0.,  h;
     couplingConstants = {couplingConstantsIn[0]};
     lSys = lSysIn;
 }
@@ -28,7 +28,7 @@ MatrixX_t Hamiltonian::blockSiteJoin(const std::vector<MatrixX_t>& rhoBasisH2)
     return j * kp(rhoBasisSigmax, sigmax);
 };
 
-MatrixX_t Hamiltonian::siteSiteJoin(int m1, int m2) const
+MatrixX_t Hamiltonian::siteSiteJoin(int m, int compm) const
 {
-    return j * kp(kp(Id(m1), sigmax), kp(Id(m2), sigmax));
+    return j * kp(kp(Id(m), sigmax), kp(Id(compm), sigmax));
 };
