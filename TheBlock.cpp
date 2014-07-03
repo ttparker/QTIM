@@ -30,16 +30,15 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     };
     int compm = data.compBlock -> m,
         compmd = compm * d;
-    lanczos(data.infiniteStage ?
-            MatrixX_t(kp(hSprime, Id(md))
-                      + data.ham.siteSiteJoin(m, m)
-                      + kp(Id(md), hSprime)) :
-            MatrixX_t(kp(hSprime, Id(compmd))
-                      + data.ham.siteSiteJoin(m, compm)
-                      + kp(Id(md), kp(Id(compm), data.ham.h1)
-                                   + data.ham.blockSiteJoin(data.compBlock
-                                                            -> rhoBasisH2)
-                                   + kp(data.compBlock -> hS, Id_d))),
+    MatrixX_t hEprime = (data.infiniteStage ?
+                         hSprime :
+                         kp(data.compBlock -> hS, Id_d)
+                         + data.ham.blockSiteJoin(data.compBlock -> rhoBasisH2)
+                         + kp(Id(compm), data.ham.h1));
+                                                  // expanded environment block
+    lanczos(kp(hSprime, Id(compmd))
+               + data.ham.siteSiteJoin(m, compm)
+               + kp(Id(md), hEprime),
             psiGround, data.lancTolerance);	          // calculate ground state
     psiGround.resize(md, compmd);
     SelfAdjointEigenSolver<MatrixX_t> rhoSolver(psiGround * psiGround.adjoint());
@@ -76,15 +75,17 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
                                             const rmMatrixX_t& psiGround,
                                             int skips) const
 {
+    MatrixX_t hSprime = kp(hS, Id_d)
+                        + data.ham.blockSiteJoin(rhoBasisH2)
+                        + kp(Id(m), data.ham.h1);      // expanded system block
     int compm = data.compBlock -> m;
-    return FinalSuperblock(kp(kp(hS, Id_d)
-                              + data.ham.blockSiteJoin(rhoBasisH2)
-                              + kp(Id(m), data.ham.h1),
-                              Id(compm * d))
+    MatrixX_t hEprime = kp(data.compBlock -> hS, Id_d)
+                        + data.ham.blockSiteJoin(data.compBlock -> rhoBasisH2)
+                        + kp(Id(compm), data.ham.h1);
+                                                  // expanded environment block
+    return FinalSuperblock(kp(hSprime, Id(compm * d))
                            + data.ham.siteSiteJoin(m, compm)
-                           + kp(Id(m * d), kp(Id(compm), data.ham.h1)
-                                           + data.ham.blockSiteJoin(data.compBlock -> rhoBasisH2)
-                                           + kp(data.compBlock -> hS, Id_d)),
+                           + kp(Id(m * d), hEprime),
                            psiGround, data, m, compm, skips);
 };
 
