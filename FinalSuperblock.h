@@ -16,8 +16,8 @@ class FinalSuperblock
     public:
         double gsEnergy;                         // returns ground-state energy
         
-        FinalSuperblock(const MatrixX_t& matFinal,
-                        const rmMatrixX_t& psiGroundIn, stepData data,
+        FinalSuperblock(double gsEnergy, int lSupFinal,
+                        const rmMatrixX_t& psiGround,
                         int mSFinal, int mEFinal, int skips);
         double expValue(const opsVec& ops, std::vector<TheBlock>& leftBlocks,
                         std::vector<TheBlock>& rightBlocks);

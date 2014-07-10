@@ -1,5 +1,4 @@
 #include "FinalSuperblock.h"
-#include "Lanczos.h"
 
 using namespace Eigen;
 
@@ -72,8 +71,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
 };
 
 FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
-                                            const rmMatrixX_t& psiGround,
-                                            int skips) const
+                                            rmMatrixX_t& psiGround, int skips)
 {
     MatrixX_t hSprime = kp(hS, Id_d)
                         + data.ham.blockSiteJoin(rhoBasisH2)
@@ -83,10 +81,11 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
                         + data.ham.blockSiteJoin(data.compBlock -> rhoBasisH2)
                         + kp(Id(compm), data.ham.h1);
                                                   // expanded environment block
-    return FinalSuperblock(kp(hSprime, Id(compm * d))
-                           + data.ham.siteSiteJoin(m, compm)
-                           + kp(Id(m * d), hEprime),
-                           psiGround, data, m, compm, skips);
+    MatrixX_t hSuper = kp(hSprime, Id(compm * d))
+                          + data.ham.siteSiteJoin(m, compm)
+                          + kp(Id(m * d), hEprime);
+    double gsEnergy = lanczos(hSuper, psiGround, data.lancTolerance);
+    return FinalSuperblock(gsEnergy, data.ham.lSys, psiGround, m, compm, skips);
 };
 
 obsMatrixX_t TheBlock::obsChangeBasis(const obsMatrixX_t& mat) const

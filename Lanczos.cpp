@@ -1,4 +1,4 @@
-#include "main.h"
+#include "TheBlock.h"
 #include "GlobalPrecisionParameters.h"
 
 #ifdef realHamiltonian
@@ -19,7 +19,8 @@ extern "C"
 
 using namespace Eigen;
 
-double lanczos(const MatrixX_t& mat, rmMatrixX_t& seed, double lancTolerance)
+double TheBlock::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
+                         double lancTolerance)
 {
     int matSize = mat.rows();
     if(matSize == 1)

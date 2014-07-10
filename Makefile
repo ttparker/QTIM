@@ -12,17 +12,17 @@ deep = $(git) *.o
 $(PROG): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LIBS) -o $(PROG) $(OBJS)
 
-FinalSuperblock.o: $(COMMONHS2) Lanczos.h
+FinalSuperblock.o: $(COMMONHS2)
 
 FreeFunctions.o: $(COMMONHS2) GlobalPrecisionParameters.h
 
-Lanczos.o: $(COMMONHS1) GlobalPrecisionParameters.h
+Lanczos.o: $(COMMONHS1) Hamiltonian.h TheBlock.h GlobalPrecisionParameters.h
 
 main.o: $(COMMONHS2) FreeFunctions.h GlobalPrecisionParameters.h ObservableOps.h
 
 $(PROG).o: $(COMMONHS1) Hamiltonian.h
 
-TheBlock.o: $(COMMONHS2) Lanczos.h
+TheBlock.o: $(COMMONHS2)
 
 lightclean:
 	$(light)

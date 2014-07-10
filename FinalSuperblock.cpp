@@ -1,16 +1,13 @@
 #include "FinalSuperblock.h"
-#include "Lanczos.h"
 
 using namespace Eigen;
 
-FinalSuperblock::FinalSuperblock(const MatrixX_t& matFinal,
-                                 const rmMatrixX_t& psiGroundIn,
-                                 stepData data, int mSFinal, int mEFinal,
-                                 int skips)
-    : lSupFinal(data.ham.lSys), psiGround(psiGroundIn), mSFinal(mSFinal),
-      mEFinal(mEFinal), skips(skips)
+FinalSuperblock::FinalSuperblock(double gsEnergy, int lSupFinal,
+                                 const rmMatrixX_t& psiGround,
+                                 int mSFinal, int mEFinal, int skips)
+    : gsEnergy(gsEnergy), lSupFinal(lSupFinal), psiGround(psiGround),
+      mSFinal(mSFinal), mEFinal(mEFinal), skips(skips)
 {
-    gsEnergy = lanczos(matFinal, psiGround, data.lancTolerance);
     if(lSupFinal % 2)
     {
         lSFinal = (lSupFinal - 1)/2;
