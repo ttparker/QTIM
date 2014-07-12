@@ -20,7 +20,7 @@ extern "C"
 using namespace Eigen;
 
 double TheBlock::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
-                         double lancTolerance)
+                         double lancTolerance) const
 {
     int matSize = mat.rows();
     if(matSize == 1)

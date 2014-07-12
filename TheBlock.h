@@ -33,7 +33,7 @@ class TheBlock
                                                      // performs each DMRG step
         FinalSuperblock createHSuperFinal(const stepData& data,
                                           rmMatrixX_t& psiGround,
-                                          int skips);
+                                          int skips) const;
         obsMatrixX_t obsChangeBasis(const obsMatrixX_t& mat) const;
                        // changes basis during calculation of observables stage
     
@@ -42,11 +42,12 @@ class TheBlock
         std::vector<MatrixX_t> rhoBasisH2;
                                      // density-matrix-basis coupling operators
         
-        MatrixX_t createHprime(const TheBlock* block, const Hamiltonian& ham);
+        MatrixX_t createHprime(const TheBlock* block, const Hamiltonian& ham)
+            const;
         std::vector<MatrixX_t> createNewRhoBasisH2(const vecMatD_t& siteBasisH2,
-                                                   bool exactDiag);
+                                                   bool exactDiag) const;
         double lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
-                       double lancTolerance);
+                       double lancTolerance) const;
      // changes input seed to ground eigenvector - make sure seed is normalized
         MatrixX_t changeBasis(const MatrixX_t& mat) const;
                    // represents operators in the basis of the new system block

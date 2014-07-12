@@ -60,6 +60,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
 };
 
 MatrixX_t TheBlock::createHprime(const TheBlock* block, const Hamiltonian& ham)
+    const
 {
     return kp(block -> hS, Id_d)
            + ham.blockSiteJoin(block -> rhoBasisH2)
@@ -67,7 +68,7 @@ MatrixX_t TheBlock::createHprime(const TheBlock* block, const Hamiltonian& ham)
 };
 
 std::vector<MatrixX_t> TheBlock::createNewRhoBasisH2(const vecMatD_t& siteBasisH2,
-                                                     bool exactDiag)
+                                                     bool exactDiag) const
 {
     std::vector<MatrixX_t> newRhoBasisH2;
     newRhoBasisH2.reserve(indepCouplingOperators);
@@ -81,6 +82,7 @@ std::vector<MatrixX_t> TheBlock::createNewRhoBasisH2(const vecMatD_t& siteBasisH
 
 FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
                                             rmMatrixX_t& psiGround, int skips)
+                                            const
 {
     MatrixX_t hSprime = createHprime(this, data.ham);  // expanded system block
     int compm = data.compBlock -> m;
