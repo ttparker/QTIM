@@ -20,17 +20,9 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
         return TheBlock(md, hSprime, createNewRhoBasisH2(data.ham.siteBasisH2,
                                                          true));
       // if near edge of system, no truncation necessary so skip DMRG algorithm
-    int compm = data.compBlock -> m,
-        compmd = compm * d;
-    MatrixX_t hEprime = (data.infiniteStage ?
-                         hSprime :
-                         createHprime(data.compBlock, data.ham));
-                                                  // expanded environment block
-    lanczos(kp(hSprime, Id(compmd))
-               + data.ham.siteSiteJoin(m, compm)
-               + kp(Id(md), hEprime),
-            psiGround, data.lancTolerance);	          // calculate ground state
-    psiGround.resize(md, compmd);
+    solveHSuper(hSprime, data, psiGround);            // calculate ground state
+    int compm = data.compBlock -> m;
+    psiGround.resize(md, compm * d);
     SelfAdjointEigenSolver<MatrixX_t> rhoSolver(psiGround * psiGround.adjoint());
                                              // find density matrix eigenstates
     primeToRhoBasis = rhoSolver.eigenvectors().rightCols(data.mMax);
@@ -43,7 +35,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
             rmMatrixX_t ePrime = psiGround.row(sPrimeIndex);
             ePrime.resize(compm, d);
             ePrime.transposeInPlace();
-            ePrime.resize(1, compmd);
+            ePrime.resize(1, compm * d);
             psiGround.row(sPrimeIndex) = ePrime;
         };
         psiGround = primeToRhoBasis.adjoint() * psiGround; 
@@ -80,27 +72,36 @@ std::vector<MatrixX_t> TheBlock::createNewRhoBasisH2(const vecMatD_t& siteBasisH
     return newRhoBasisH2;
 };
 
+double TheBlock::solveHSuper(const MatrixX_t& hSprime, const stepData& data,
+                             rmMatrixX_t& psiGround) const
+{
+    MatrixX_t hEprime = (data.infiniteStage ?
+                         hSprime :
+                         createHprime(data.compBlock, data.ham));
+                                                  // expanded environment block
+    MatrixX_t hSuper = kp(hSprime, Id(data.compBlock -> m * d))
+                       + data.ham.siteSiteJoin(m, data.compBlock -> m)
+                       + kp(Id(m * d), hEprime);
+    return lanczos(hSuper, psiGround, data.lancTolerance);
+};
+
+MatrixX_t TheBlock::changeBasis(const MatrixX_t& mat) const
+{
+    return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
+};
+
 FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
                                             rmMatrixX_t& psiGround, int skips)
                                             const
 {
     MatrixX_t hSprime = createHprime(this, data.ham);  // expanded system block
-    int compm = data.compBlock -> m;
-    MatrixX_t hEprime = createHprime(data.compBlock, data.ham);
-                                                  // expanded environment block
-    MatrixX_t hSuper = kp(hSprime, Id(compm * d))
-                          + data.ham.siteSiteJoin(m, compm)
-                          + kp(Id(m * d), hEprime);
-    double gsEnergy = lanczos(hSuper, psiGround, data.lancTolerance);
-    return FinalSuperblock(gsEnergy, data.ham.lSys, psiGround, m, compm, skips);
+    double gsEnergy = solveHSuper(hSprime, data, psiGround);
+                                                      // calculate ground state
+    return FinalSuperblock(gsEnergy, data.ham.lSys, psiGround, m,
+                           data.compBlock -> m, skips);
 };
 
 obsMatrixX_t TheBlock::obsChangeBasis(const obsMatrixX_t& mat) const
-{
-    return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
-};
-
-MatrixX_t TheBlock::changeBasis(const MatrixX_t& mat) const
 {
     return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
 };

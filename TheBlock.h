@@ -47,8 +47,10 @@ class TheBlock
         std::vector<MatrixX_t> createNewRhoBasisH2(const vecMatD_t& siteBasisH2,
                                                    bool exactDiag) const;
         double lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
-                       double lancTolerance) const;
+                       double lancTolerance) const,
      // changes input seed to ground eigenvector - make sure seed is normalized
+               solveHSuper(const MatrixX_t& hSprime, const stepData& data,
+                           rmMatrixX_t& psiGround) const;
         MatrixX_t changeBasis(const MatrixX_t& mat) const;
                    // represents operators in the basis of the new system block
 };
