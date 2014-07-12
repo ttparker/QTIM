@@ -8,23 +8,18 @@ TheBlock::TheBlock(int m, const MatrixX_t& hS,
 
 TheBlock::TheBlock(const Hamiltonian& ham) : m(d), hS(ham.h1)
 {
-    rhoBasisH2.assign(ham.h2.begin(), ham.h2.begin() + indepCouplingOperators);
+    rhoBasisH2.assign(ham.siteBasisH2.begin(),
+                      ham.siteBasisH2.begin() + indepCouplingOperators);
 };
 
 TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
 {
     MatrixX_t hSprime = createHprime(this, data.ham);  // expanded system block
-    std::vector<MatrixX_t> tempRhoBasisH2;
-    tempRhoBasisH2.reserve(indepCouplingOperators);
     int md = m * d;
     if(data.exactDiag)
+        return TheBlock(md, hSprime, createNewRhoBasisH2(data.ham.siteBasisH2,
+                                                         true));
       // if near edge of system, no truncation necessary so skip DMRG algorithm
-    {
-        for(auto op = data.ham.h2.begin(), end = op + indepCouplingOperators;
-            op != end; op++)
-            tempRhoBasisH2.push_back(kp(Id(m), *op));
-        return TheBlock(md, hSprime, tempRhoBasisH2);
-    };
     int compm = data.compBlock -> m,
         compmd = compm * d;
     MatrixX_t hEprime = (data.infiniteStage ?
@@ -40,9 +35,6 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                                              // find density matrix eigenstates
     primeToRhoBasis = rhoSolver.eigenvectors().rightCols(data.mMax);
                                             // construct change-of-basis matrix
-    for(auto op = data.ham.h2.begin(), end = op + indepCouplingOperators;
-        op != end; op++)
-        tempRhoBasisH2.push_back(changeBasis(kp(Id(m), *op)));
     if(!data.infiniteStage) // modify psiGround to predict the next ground state
     {
         for(int sPrimeIndex = 0; sPrimeIndex < md; sPrimeIndex++)
@@ -62,7 +54,8 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
         psiGround.resize(data.mMax * d
                          * data.beforeCompBlock -> primeToRhoBasis.rows(), 1);
     };
-    return TheBlock(data.mMax, changeBasis(hSprime), tempRhoBasisH2);
+    return TheBlock(data.mMax, changeBasis(hSprime),
+                    createNewRhoBasisH2(data.ham.siteBasisH2, false));
                                   // save expanded-block operators in new basis
 };
 
@@ -71,6 +64,19 @@ MatrixX_t TheBlock::createHprime(const TheBlock* block, const Hamiltonian& ham)
     return kp(block -> hS, Id_d)
            + ham.blockSiteJoin(block -> rhoBasisH2)
            + kp(Id(block -> m), ham.h1);
+};
+
+std::vector<MatrixX_t> TheBlock::createNewRhoBasisH2(const vecMatD_t& siteBasisH2,
+                                                     bool exactDiag)
+{
+    std::vector<MatrixX_t> newRhoBasisH2;
+    newRhoBasisH2.reserve(indepCouplingOperators);
+    for(auto op = siteBasisH2.begin(), end = op + indepCouplingOperators;
+        op != end; op++)
+        newRhoBasisH2.push_back(exactDiag ?
+                                kp(Id(m), *op) :
+                                changeBasis(kp(Id(m), *op)));
+    return newRhoBasisH2;
 };
 
 FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,

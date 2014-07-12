@@ -2,14 +2,14 @@
 
 #define j couplingConstants[0]
 #define h couplingConstantsIn[1]
-#define sigmax h2[0]
+#define sigmax siteBasisH2[0]
 #define rhoBasisSigmax rhoBasisH2[0]
 
 using namespace Eigen;
 
 Hamiltonian::Hamiltonian()
 {
-    h2.resize(1);
+    siteBasisH2.resize(1);
     sigmax << 0., 1.,
               1., 0.;                                // define Pauli matrices
 };
