@@ -45,6 +45,7 @@ class TheBlock
         double lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
                        double lancTolerance);
      // changes input seed to ground eigenvector - make sure seed is normalized
+        MatrixX_t createHprime(const TheBlock* block, const Hamiltonian& ham);
         MatrixX_t changeBasis(const MatrixX_t& mat) const;
                    // represents operators in the basis of the new system block
 };

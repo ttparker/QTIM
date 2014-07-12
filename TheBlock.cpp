@@ -13,9 +13,7 @@ TheBlock::TheBlock(const Hamiltonian& ham) : m(d), hS(ham.h1)
 
 TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
 {
-    MatrixX_t hSprime = kp(hS, Id_d)
-                        + data.ham.blockSiteJoin(rhoBasisH2)
-                        + kp(Id(m), data.ham.h1);      // expanded system block
+    MatrixX_t hSprime = createHprime(this, data.ham);  // expanded system block
     std::vector<MatrixX_t> tempRhoBasisH2;
     tempRhoBasisH2.reserve(indepCouplingOperators);
     int md = m * d;
@@ -31,9 +29,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
         compmd = compm * d;
     MatrixX_t hEprime = (data.infiniteStage ?
                          hSprime :
-                         kp(data.compBlock -> hS, Id_d)
-                         + data.ham.blockSiteJoin(data.compBlock -> rhoBasisH2)
-                         + kp(Id(compm), data.ham.h1));
+                         createHprime(data.compBlock, data.ham));
                                                   // expanded environment block
     lanczos(kp(hSprime, Id(compmd))
                + data.ham.siteSiteJoin(m, compm)
@@ -70,16 +66,19 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                                   // save expanded-block operators in new basis
 };
 
+MatrixX_t TheBlock::createHprime(const TheBlock* block, const Hamiltonian& ham)
+{
+    return kp(block -> hS, Id_d)
+           + ham.blockSiteJoin(block -> rhoBasisH2)
+           + kp(Id(block -> m), ham.h1);
+};
+
 FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
                                             rmMatrixX_t& psiGround, int skips)
 {
-    MatrixX_t hSprime = kp(hS, Id_d)
-                        + data.ham.blockSiteJoin(rhoBasisH2)
-                        + kp(Id(m), data.ham.h1);      // expanded system block
+    MatrixX_t hSprime = createHprime(this, data.ham);  // expanded system block
     int compm = data.compBlock -> m;
-    MatrixX_t hEprime = kp(data.compBlock -> hS, Id_d)
-                        + data.ham.blockSiteJoin(data.compBlock -> rhoBasisH2)
-                        + kp(Id(compm), data.ham.h1);
+    MatrixX_t hEprime = createHprime(data.compBlock, data.ham);
                                                   // expanded environment block
     MatrixX_t hSuper = kp(hSprime, Id(compm * d))
                           + data.ham.siteSiteJoin(m, compm)
