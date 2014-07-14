@@ -141,87 +141,93 @@ int main()
                 continue;
             };
         };
-        std::vector<TheBlock> leftBlocks(lSys - 2 - skips),
-                              rightBlocks(lSys - 2 - skips);
-             // initialize system - the last block is only used for odd-size ED
-        TheBlock* rightBlocksStart = rightBlocks.data();
-        leftBlocks.front() = rightBlocks.front() = TheBlock(data.ham);
-                                               // initialize the one-site block
+        std::vector<TheBlock> westBlocks(lSys - 2 - skips),
+                              eastBlocks(lSys - 2 - skips);
+                                    // initialize system - the last block in
+                                    // each vector is only used for odd-size ED
+        TheBlock* eastBlocksStart = eastBlocks.data();
+        westBlocks.front() = TheBlock(data.ham, true);
+        eastBlocks.front() = TheBlock(data.ham, false);
+                                         // initialize the edge one-site blocks
         std::cout << "Performing iDMRG..." << std::endl;
             // note: this iDMRG code assumes parity symmetry of the Hamiltonian
+        data.sweepingEast = true;
         data.exactDiag = true;
-        data.compBlock = rightBlocksStart;
+        data.compBlock = eastBlocksStart;
         data.infiniteStage = true;
         data.lancTolerance = groundStateErrorTolerances.front()
                              * groundStateErrorTolerances.front() / 2;
         rmMatrixX_t psiGround;                    // seed for Lanczos algorithm
         for(int site = 0; site < skips; site++, data.compBlock++) // initial ED
-            rightBlocks[site + 1] = leftBlocks[site + 1] 
-                                  = leftBlocks[site].nextBlock(data, psiGround);
+            westBlocks[site + 1]
+                = westBlocks[site].nextBlock(data, psiGround,
+                                             eastBlocksStart + site + 1);
         data.exactDiag = completeED;
         for(int site = skips, end = lEFinal - 1; site < end; site++,
                                                              data.compBlock++)
                                                                        // iDMRG
         {
-            psiGround = randomSeed(leftBlocks[site], rightBlocks[site]);
-            rightBlocks[site + 1] = leftBlocks[site + 1]
-                                  = leftBlocks[site].nextBlock(data, psiGround);
-            rightBlocks[site].primeToRhoBasis = leftBlocks[site].primeToRhoBasis;
-                                     // copy primeToRhoBasis to reflected block
+            psiGround = randomSeed(westBlocks[site], eastBlocks[site]);
+            westBlocks[site + 1]
+                = westBlocks[site].nextBlock(data, psiGround,
+                                             eastBlocksStart + site + 1);
         };
         if(oddSize)
         {
-            data.compBlock = rightBlocksStart + (lSFinal - 2);
-            psiGround = randomSeed(leftBlocks[lSFinal - 2],
-                                   rightBlocks[lSFinal - 2]);
-            leftBlocks[lSFinal - 1] = leftBlocks[lSFinal - 2]
+            data.compBlock = eastBlocksStart + (lSFinal - 2);
+            data.infiniteStage = false; // no longer any need to create hEprime
+            psiGround = randomSeed(westBlocks[lSFinal - 2],
+                                   eastBlocks[lSFinal - 2]);
+            westBlocks[lSFinal - 1] = westBlocks[lSFinal - 2]
                                       .nextBlock(data, psiGround);
         };
         if(completeED || nSweeps == 0)
-            psiGround = randomSeed(leftBlocks[lSFinal - 1],
-                                   rightBlocks[lEFinal - 1]);
+            psiGround = randomSeed(westBlocks[lSFinal - 1],
+                                   eastBlocks[lEFinal - 1]);
         else
         {
             std::cout << "Performing fDMRG..." << std::endl;
             data.infiniteStage = false;
             int endSweep = lSys - 4 - skips;              // last site of sweep
-            psiGround = randomSeed(leftBlocks[lSFinal - 1],
-                                   rightBlocks[lEFinal - 1]);
+            psiGround = randomSeed(westBlocks[lSFinal - 1],
+                                   eastBlocks[lEFinal - 1]);
             for(int sweep = 1; sweep <= nSweeps; sweep++)
                                                     // perform the fDMRG sweeps
             {
-                data.compBlock = rightBlocksStart + (lEFinal - 1);
+                data.compBlock = eastBlocksStart + (lEFinal - 1);
                 data.lancTolerance = groundStateErrorTolerances[sweep]
                                      * groundStateErrorTolerances[sweep] / 2;
                 data.beforeCompBlock = data.compBlock - 1;
                 for(int site = lSFinal - 1; site < endSweep;
                     site++, data.compBlock--, data.beforeCompBlock--)
-                    leftBlocks[site + 1] = leftBlocks[site].nextBlock(data,
+                    westBlocks[site + 1] = westBlocks[site].nextBlock(data,
                                                                       psiGround);
-                reflectPredictedPsi(psiGround, leftBlocks[endSweep],
-                                    rightBlocks[skips]);
+                reflectPredictedPsi(psiGround, westBlocks[endSweep],
+                                    eastBlocks[skips]);
                                // reflect the system to reverse sweep direction
-                data.compBlock = &leftBlocks[endSweep];
+                data.sweepingEast = false;
+                data.compBlock = &westBlocks[endSweep];
                 data.beforeCompBlock = data.compBlock - 1;
                 for(int site = skips; site < endSweep;
                     site++, data.compBlock--, data.beforeCompBlock--)
-                    rightBlocks[site + 1] = rightBlocks[site].nextBlock(data,
-                                                                        psiGround);
-                reflectPredictedPsi(psiGround, rightBlocks[endSweep],
-                                    leftBlocks[skips]);
-                data.compBlock = rightBlocksStart + endSweep;
+                    eastBlocks[site + 1] = eastBlocks[site].nextBlock(data,
+                                                                      psiGround);
+                reflectPredictedPsi(psiGround, eastBlocks[endSweep],
+                                    westBlocks[skips]);
+                data.sweepingEast = true;
+                data.compBlock = eastBlocksStart + endSweep;
                 data.beforeCompBlock = data.compBlock - 1;
                 for(int site = skips, end = lSFinal - 1; site < end;
                     site++, data.compBlock--, data.beforeCompBlock--)
-                    leftBlocks[site + 1] = leftBlocks[site].nextBlock(data,
+                    westBlocks[site + 1] = westBlocks[site].nextBlock(data,
                                                                       psiGround);
                 std::cout << "Sweep " << sweep << " complete." << std::endl;
             };
         };
-        data.compBlock = rightBlocksStart + (lEFinal - 1);
+        data.compBlock = eastBlocksStart + (lEFinal - 1);
         data.infiniteStage = false;
         FinalSuperblock hSuperFinal
-            = leftBlocks[lSFinal - 1].createHSuperFinal(data, psiGround, skips);
+            = westBlocks[lSFinal - 1].createHSuperFinal(data, psiGround, skips);
                                                // calculate ground-state energy
         fileout << "Ground state energy density = "
                 << hSuperFinal.gsEnergy / lSys << std::endl << std::endl;
@@ -232,13 +238,13 @@ int main()
             MatrixXd twoSiteVals;
             if(calcOneSiteExpValues)   // calculate one-site expectation values
                 oneSiteVals = oneSiteExpValues(oneSiteOp, rangeOfObservables,
-                                               lSys, hSuperFinal, leftBlocks,
-                                               rightBlocks, fileout);
+                                               lSys, hSuperFinal, westBlocks,
+                                               eastBlocks, fileout);
             if(calcTwoSiteExpValues)   // calculate two-site expectation values
                 twoSiteVals = twoSiteExpValues(firstTwoSiteOp, secondTwoSiteOp,
                                                rangeOfObservables, lSys,
-                                               hSuperFinal, leftBlocks,
-                                               rightBlocks, fileout);
+                                               hSuperFinal, westBlocks,
+                                               eastBlocks, fileout);
             if(calcOneSiteExpValues && calcTwoSiteExpValues)
             {
                 MatrixXd connectedCorrFunc

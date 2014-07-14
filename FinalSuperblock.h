@@ -19,8 +19,8 @@ class FinalSuperblock
         FinalSuperblock(double gsEnergy, int lSupFinal,
                         const rmMatrixX_t& psiGround,
                         int mSFinal, int mEFinal, int skips);
-        double expValue(const opsVec& ops, std::vector<TheBlock>& leftBlocks,
-                        std::vector<TheBlock>& rightBlocks);
+        double expValue(const opsVec& ops, std::vector<TheBlock>& westBlocks,
+                        std::vector<TheBlock>& eastBlocks);
         // calculates exectation value of a combination of single-site operators
     
     private:

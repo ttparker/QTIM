@@ -20,7 +20,10 @@ class Hamiltonian
     private:
         std::vector<double> couplingConstants;
         vecMatD_t siteBasisH2;                 // site-basis coupling operators
-        MatrixD_t h1;                                // single-site Hamiltonian
+        MatrixD_t westSideH1,
+              // single-site Hamiltonian for initially left-hand half of system
+                  eastSideH1;
+             // single-site Hamiltonian for initially right-hand half of system
         
         MatrixX_t blockSiteJoin(const std::vector<MatrixX_t>& rhoBasisH2) const,
                                            // appends free site to system block

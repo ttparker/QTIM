@@ -18,8 +18,8 @@ FinalSuperblock::FinalSuperblock(double gsEnergy, int lSupFinal,
 };
 
 double FinalSuperblock::expValue(const opsVec& ops,
-                                 std::vector<TheBlock>& leftBlocks,
-                                 std::vector<TheBlock>& rightBlocks)
+                                 std::vector<TheBlock>& westBlocks,
+                                 std::vector<TheBlock>& eastBlocks)
 {
     opsMap sysBlockOps, // observable operators that will act on the system block
            envBlockOps; // same for environment block
@@ -62,7 +62,7 @@ double FinalSuperblock::expValue(const opsVec& ops,
             psiGround.resize(mSFinal * d, mEFinal * d);
             return obsRe((psiGround.adjoint()
                           * psiGround
-                          * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal),
+                          * kp(rhoBasisRep(envBlockOps, eastBlocks, lEFinal),
                                rFreeSite).transpose()
                          ).trace());
         }
@@ -72,7 +72,7 @@ double FinalSuperblock::expValue(const opsVec& ops,
         {
             psiGround.resize(mSFinal, d * mEFinal * d);
             return obsRe((psiGround.adjoint()
-                          * rhoBasisRep(sysBlockOps, leftBlocks, lSFinal)
+                          * rhoBasisRep(sysBlockOps, westBlocks, lSFinal)
                           * psiGround
                          ).trace());
         }
@@ -80,7 +80,7 @@ double FinalSuperblock::expValue(const opsVec& ops,
         {
             psiGround.resize(mSFinal * d, mEFinal * d);
             return obsRe((psiGround.adjoint()
-                          * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal),
+                          * kp(rhoBasisRep(sysBlockOps, westBlocks, lSFinal),
                                lFreeSite)
                           * psiGround
                          ).trace());
@@ -89,9 +89,9 @@ double FinalSuperblock::expValue(const opsVec& ops,
     {
         psiGround.resize(mSFinal * d, mEFinal * d);
         return obsRe((psiGround.adjoint()
-                      * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal), lFreeSite)
+                      * kp(rhoBasisRep(sysBlockOps, westBlocks, lSFinal), lFreeSite)
                       * psiGround
-                      * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal), rFreeSite)
+                      * kp(rhoBasisRep(envBlockOps, eastBlocks, lEFinal), rFreeSite)
                         .transpose()
                      ).trace());
     };

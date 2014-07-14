@@ -16,8 +16,10 @@ Hamiltonian::Hamiltonian()
 
 void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn, int lSysIn)
 {
-    h1 << -h, 0.,
-          0.,  h;
+    westSideH1 << -h, 0.,
+                  0.,  h;
+    eastSideH1 << 0., -h,
+                  -h, 0.;
     couplingConstants = {couplingConstantsIn[0]};
     lSys = lSysIn;
 }
