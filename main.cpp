@@ -92,9 +92,10 @@ int main()
         std::vector<double> couplingConstants(nCouplingConstants);
         for(int i = 0; i < nCouplingConstants; i++)
             filein >> couplingConstants[i];
+        double k;          // wave number of rotation of the interstitial spins
         int rangeOfObservables, // number of sites at which to measure observables
             nSweeps;                        // number of sweeps to be performed
-        filein >> rangeOfObservables >> data.mMax >> nSweeps;
+        filein >> k >> rangeOfObservables >> data.mMax >> nSweeps;
         if(rangeOfObservables == -1)
             rangeOfObservables = lSys;
         std::vector<double> groundStateErrorTolerances(nSweeps + 1);
@@ -104,12 +105,12 @@ int main()
         fileout << "System length: " << lSys << "\nCoupling constants:";
         for(double couplingConstant : couplingConstants)
             fileout << " " << couplingConstant;
-        fileout << "\nBond dimension: " << data.mMax << "\nNumber of sweeps: "
-                << nSweeps << "\nLanczos tolerances:";
+        fileout << "\nWave number: " << k << "\nBond dimension: " << data.mMax
+                << "\nNumber of sweeps: " << nSweeps << "\nLanczos tolerances:";
         for(double groundStateErrorTolerance : groundStateErrorTolerances)
             fileout << " " << groundStateErrorTolerance;
         fileout << std::endl << std::endl;
-        data.ham.setParams(couplingConstants, lSys);
+        data.ham.setParams(couplingConstants, lSys, k);
         int skips = 0,
             runningKeptStates = d * d;
         for(; runningKeptStates <= data.mMax; skips++)
