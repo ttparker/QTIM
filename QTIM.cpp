@@ -2,7 +2,6 @@
 
 #define j1 couplingConstants[0]
 #define j2 couplingConstants[1]
-#define h couplingConstantsIn[2]
 #define sigmaplus siteBasisH2[0]
 #define sigmaz siteBasisH2[1]
 #define sigmaminus siteBasisH2[2]
@@ -24,6 +23,8 @@ Hamiltonian::Hamiltonian()
                   1., 0.;
     sigmaz << 1.,  0.,
               0., -1.;
+    sigmax << 0., 1.,
+              1., 0.;
 };
 
 void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn,
@@ -32,6 +33,7 @@ void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn,
     couplingConstants.assign(couplingConstantsIn.begin(),
                              couplingConstantsIn.end() - 1);
     lSys = lSysIn;
+    h = couplingConstantsIn[2];
     cosList.clear();
     sinList.clear();
     cosList.reserve(lSysIn);
@@ -41,10 +43,6 @@ void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn,
         cosList.push_back(cos(k * i));
         sinList.push_back(sin(k * i));
     };
-    westSideH1 << -h, 0.,
-                  0.,  h;
-    eastSideH1 << 0., -h,
-                  -h, 0.;
 }
 
 MatrixX_t Hamiltonian::blockAdjacentSiteJoin(int j,
@@ -81,4 +79,10 @@ MatrixX_t Hamiltonian::siteSiteJoin(int m, int compm) const
     MatrixX_t plusMinus = kp(kp(sigmaplus, Id(compm)), sigmaminus);
     return j1 * kp(Id(m), kp(kp(sigmaz, Id(compm)), sigmaz)
                            + 2 * (plusMinus + plusMinus.adjoint()));
+};
+
+MatrixD_t Hamiltonian::h1(int sitesFromWestEnd) const
+{
+    return -h * (cosList[sitesFromWestEnd] * sigmax
+                 + sinList[sitesFromWestEnd] * sigmaz);
 };

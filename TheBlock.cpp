@@ -8,7 +8,7 @@ TheBlock::TheBlock(int m, const MatrixX_t& hS, const matPair newRhoBasisH2s,
       off1RhoBasisH2(newRhoBasisH2s.second), l(l) {};
 
 TheBlock::TheBlock(const Hamiltonian& ham, bool westSide)
-    : m(d), hS(westSide ? ham.westSideH1 : ham.eastSideH1), l(0)
+    : m(d), hS(westSide ? ham.h1(0) : ham.h1(ham.lSys - 1)), l(0)
 {
     off0RhoBasisH2.assign(ham.siteBasisH2.begin(),
                           ham.siteBasisH2.begin() + indepCouplingOperators);
@@ -77,12 +77,18 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround,
 MatrixX_t TheBlock::createHprime(const TheBlock* block, bool hSprime,
                                  const stepData& data) const
 {
+    int freeSiteDistFromWestEnd = (data.sweepingEast ?
+                                   (hSprime ? l + 1 :
+                                              (data.infiniteStage ?
+                                               data.ham.lSys - l - 2 :
+                                               l + 2)) :
+                                   (hSprime ? data.ham.lSys - l - 2 :
+                                              data.ham.lSys - l - 3));
     MatrixX_t hPrime = kp(block -> hS, Id_d)
                        + data.ham.blockAdjacentSiteJoin(1, block
                                                            -> off0RhoBasisH2)
-                       + kp(Id(block -> m), hSprime == data.sweepingEast ?
-                                            data.ham.westSideH1 :
-                                            data.ham.eastSideH1);
+                       + kp(Id(block -> m),
+                            data.ham.h1(freeSiteDistFromWestEnd));
     if(block -> l != 0)
         hPrime += data.ham.blockAdjacentSiteJoin(2, block -> off1RhoBasisH2);
     return hPrime;

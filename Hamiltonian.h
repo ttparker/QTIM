@@ -22,13 +22,12 @@ class Hamiltonian
     
     private:
         std::vector<double> couplingConstants;
-        vecMatD_t siteBasisH2;                 // site-basis coupling operators
-        MatrixD_t westSideH1,
-              // single-site Hamiltonian for initially left-hand half of system
-                  eastSideH1;
-             // single-site Hamiltonian for initially right-hand half of system
+        vecMatD_t siteBasisH2;       // site-basis coupling operators - the
+                                     // independent ones should be listed first
+        double h;                           // external magnetic field strength
         std::vector<double> cosList,       // cos(k i) for each i in the system
                             sinList;       // same for sin(k i)
+        MatrixD_t sigmax;                             // for the external field
         
         MatrixX_t blockAdjacentSiteJoin(int j,
                                         const std::vector<MatrixX_t>& rhoBasisH2)
@@ -41,6 +40,9 @@ class Hamiltonian
                                   const,
                   siteSiteJoin(int m, int compm) const;
                                            // joins the two free sites together
+        MatrixD_t h1(int sitesFromWestEnd) const;
+                        // returns the external magnetic field as a function of
+                        // position, measured from the initially leftmost site
     
     friend class TheBlock;
 };
