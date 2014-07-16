@@ -3,7 +3,8 @@
 
 #include "Hamiltonian.h"
 
-typedef std::pair<std::vector<MatrixX_t>, std::vector<MatrixX_t>> matPair;
+typedef std::pair<MatrixX_t, MatrixX_t> matPair;
+typedef std::pair<std::vector<MatrixX_t>, std::vector<MatrixX_t>> vecMatPair;
 
 class FinalSuperblock;
 class TheBlock;
@@ -27,7 +28,7 @@ class TheBlock
         int m;                              // number of states stored in block
         
         TheBlock(int m = 0, const MatrixX_t& hS = MatrixX_t(),
-                 const matPair newRhoBasisH2s = matPair(),
+                 const vecMatPair& newRhoBasisH2s = vecMatPair(),
                  int l = 0);
         TheBlock(const Hamiltonian& ham, bool westSide);
         TheBlock nextBlock(const stepData& data, rmMatrixX_t& psiGround,
@@ -49,16 +50,15 @@ class TheBlock
             // the site on which it acts
         int l;            // site at the end of the block (i.e. block size - 1)
         
-        MatrixX_t createHprime(const TheBlock* block, bool hSprime,
-                               const stepData& data) const;
-        matPair createNewRhoBasisH2s(const vecMatD_t& siteBasisH2,
+        matPair createHprimes(const stepData& data) const;
+        vecMatPair createNewRhoBasisH2s(const vecMatD_t& siteBasisH2,
                                      bool exactDiag, const TheBlock* block)
                                      const;
         double lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
                        double lancTolerance) const,
      // changes input seed to ground eigenvector - make sure seed is normalized
-               solveHSuper(const MatrixX_t& hSprime, const MatrixX_t& hEprime,
-                           const stepData& data, rmMatrixX_t& psiGround) const;
+               solveHSuper(const matPair& hPrimes, const stepData& data,
+                           rmMatrixX_t& psiGround) const;
         MatrixX_t changeBasis(const MatrixX_t& mat, const TheBlock* block) const;
                    // represents operators in the basis of the new system block
 };
