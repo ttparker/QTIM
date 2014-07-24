@@ -33,7 +33,7 @@ void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn,
     couplingConstants.assign(couplingConstantsIn.begin(),
                              couplingConstantsIn.end() - 1);
     lSys = lSysIn;
-    h = couplingConstantsIn[2];
+    h = -2 * couplingConstantsIn[2] * cos(k / 2);
     cosList.clear();
     sinList.clear();
     cosList.reserve(lSysIn);
