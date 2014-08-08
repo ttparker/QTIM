@@ -31,9 +31,8 @@ double TheBlock::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
                         b;
     a.reserve(minIters);
     b.reserve(minIters);
-    VectorX_t x = seed;
-    MatrixX_t basisVecs = x;
-    x.noalias() = mat * basisVecs;
+    MatrixX_t basisVecs = seed;
+    VectorX_t x = mat * basisVecs;
     a.push_back(re(seed.col(0).dot(x)));
     b.push_back(0.);
     VectorX_t oldGS;
