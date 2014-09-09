@@ -24,7 +24,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround,
     {
         *nextCompBlock = TheBlock(md, hPrimes.second,
                                   createNewRhoBasisH2s(data.ham.siteBasisH2,
-                                                      true, this), l + 1);
+                                                       true, this), l + 1);
         return TheBlock(md, hPrimes.first,
                         createNewRhoBasisH2s(data.ham.siteBasisH2, true, this),
                         l + 1);
