@@ -9,7 +9,7 @@ using namespace Eigen;
 
 Hamiltonian::Hamiltonian()
 {
-    siteBasisH2.resize(1);
+    siteBasisH2.resize(nCouplingOperators);
     sigmax << 0., 1.,
               1., 0.;                                // define Pauli matrices
 };
