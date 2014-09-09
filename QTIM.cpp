@@ -16,7 +16,7 @@ using namespace Eigen;
 
 Hamiltonian::Hamiltonian()
 {
-    siteBasisH2.resize(3);
+    siteBasisH2.resize(nCouplingOperators);
     sigmaplus << 0., 1.,
                  0., 0.;                  // define one-site operators matrices
     sigmaminus << 0., 0.,
