@@ -90,14 +90,14 @@ MatrixX_t TheBlock::changeBasis(const MatrixX_t& mat) const
 };
 
 FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
-                                            rmMatrixX_t& psiGround, int skips)
-                                            const
+                                            rmMatrixX_t& psiGround, int lSys,
+                                            int skips) const
 {
     MatrixX_t hSprime = createHprime(this, data.ham);  // expanded system block
     double gsEnergy = solveHSuper(hSprime, data, psiGround);
                                                       // calculate ground state
-    return FinalSuperblock(gsEnergy, data.ham.lSys, psiGround, m,
-                           data.compBlock -> m, skips);
+    return FinalSuperblock(gsEnergy, lSys, psiGround, m, data.compBlock -> m,
+                           skips);
 };
 
 obsMatrixX_t TheBlock::obsChangeBasis(const obsMatrixX_t& mat) const

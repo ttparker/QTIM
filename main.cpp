@@ -109,7 +109,7 @@ int main()
         for(double groundStateErrorTolerance : groundStateErrorTolerances)
             fileout << " " << groundStateErrorTolerance;
         fileout << std::endl << std::endl;
-        data.ham.setParams(couplingConstants, lSys);
+        data.ham.setParams(couplingConstants);
         int skips = 0,
             runningKeptStates = d * d;
         for(; runningKeptStates <= data.mMax; skips++)
@@ -221,7 +221,8 @@ int main()
         data.compBlock = rightBlocksStart + (lEFinal - 1);
         data.infiniteStage = false;
         FinalSuperblock hSuperFinal
-            = leftBlocks[lSFinal - 1].createHSuperFinal(data, psiGround, skips);
+            = leftBlocks[lSFinal - 1].createHSuperFinal(data, psiGround, lSys,
+                                                        skips);
                                                // calculate ground-state energy
         fileout << "Ground state energy density = "
                 << hSuperFinal.gsEnergy / lSys << std::endl << std::endl;
