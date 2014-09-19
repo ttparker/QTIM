@@ -12,8 +12,6 @@ typedef std::vector<MatrixD_t, Eigen::aligned_allocator<MatrixD_t>> vecMatD_t;
 class Hamiltonian
 {
     public:
-        int lSys;                                      // current system length
-        
         Hamiltonian();
         void setParams(const std::vector<double>& couplingConstants, int lSys,
                        double k);
@@ -21,6 +19,7 @@ class Hamiltonian
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
     private:
+        int lSys;                                      // current system length
         std::vector<double> couplingConstants;
         vecMatD_t siteBasisH2;       // site-basis coupling operators - the
                                      // independent ones should be listed first
