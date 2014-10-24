@@ -30,7 +30,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     if(!data.infiniteStage) // modify psiGround to predict the next ground state
     {
         for(int sPrimeIndex = 0; sPrimeIndex < md; sPrimeIndex++)
-                    // transpose the environment block and right-hand free site
+                // transpose the environment block and the right-hand free site
         {
             rmMatrixX_t ePrime = psiGround.row(sPrimeIndex);
             ePrime.resize(compm, d);
