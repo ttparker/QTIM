@@ -1,4 +1,5 @@
 #include "FinalSuperblock.h"
+#include "GlobalPrecisionParameters.h"
 
 using namespace Eigen;
 
@@ -35,7 +36,33 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround,
     psiGround.resize(md, compm * d);
     SelfAdjointEigenSolver<MatrixX_t> rhoSolver(psiGround * psiGround.adjoint());
                                       // find system density matrix eigenstates
-    primeToRhoBasis = rhoSolver.eigenvectors().rightCols(data.mMax);
+    int evecsToKeep;
+    if(md <= data.mMax)
+        evecsToKeep = md;
+    else
+    {
+        int firstKeptEval = md - data.mMax;
+        for(double currentFirstEval = rhoSolver.eigenvalues()(firstKeptEval);
+            firstKeptEval < md
+            && (currentFirstEval == 0
+                || (currentFirstEval - rhoSolver.eigenvalues()(firstKeptEval - 1))
+                   / std::abs(currentFirstEval) < degenerateDMCutoff);
+            firstKeptEval++);
+              // find the the max number of eigenvectors to keep that do not
+              // terminate inside a degenerate eigenspace of the density matrix
+        evecsToKeep = md - firstKeptEval;
+        if(evecsToKeep == 0)
+        {
+            std::cerr << "More than mMax highest-weighted density-matrix "
+                      << "eigenvectors are degenerate." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        else if(evecsToKeep != data.mMax)
+            std::cout << "Warning: mMax truncation ends in a degenerate DM "
+                      << "eigenspace, lowering cutoff to " << evecsToKeep
+                      << " states." << std::endl;
+    };
+    primeToRhoBasis = rhoSolver.eigenvectors().rightCols(evecsToKeep);
                                      // construct system change-of-basis matrix
     if(data.infiniteStage)
     {
@@ -63,12 +90,12 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround,
         };
         psiGround = primeToRhoBasis.adjoint() * psiGround; 
                                       // change the expanded system block basis
-        psiGround.resize(data.mMax * d, compm);
+        psiGround.resize(evecsToKeep * d, compm);
         psiGround *= data.beforeCompBlock -> primeToRhoBasis.transpose();
                                           // change the environment block basis
-        psiGround.resize(data.mMax * d * data.beforeCompBlock -> m * d, 1);
+        psiGround.resize(evecsToKeep * d * data.beforeCompBlock -> m * d, 1);
     };
-    return TheBlock(data.mMax, changeBasis(hPrimes.first, this),
+    return TheBlock(evecsToKeep, changeBasis(hPrimes.first, this),
                     createNewRhoBasisH2s(data.ham.siteBasisH2, false, this),
                     l + 1);       // save expanded-block operators in new basis
 };
