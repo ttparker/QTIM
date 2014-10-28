@@ -22,7 +22,7 @@ main.o: $(COMMONHS2) FreeFunctions.h GlobalPrecisionParameters.h ObservableOps.h
 
 $(PROG).o: $(COMMONHS1) Hamiltonian.h
 
-TheBlock.o: $(COMMONHS2)
+TheBlock.o: $(COMMONHS2) GlobalPrecisionParameters.h
 
 lightclean:
 	$(light)
