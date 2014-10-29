@@ -159,9 +159,11 @@ int main()
         data.lancTolerance = groundStateErrorTolerances.front()
                              * groundStateErrorTolerances.front() / 2;
         rmMatrixX_t psiGround;                    // seed for Lanczos algorithm
+        double cumulativeTruncationError = 0.;
         for(int site = 0; site < skips; site++, data.compBlock++) // initial ED
             westBlocks[site + 1]
                 = westBlocks[site].nextBlock(data, psiGround,
+                                             cumulativeTruncationError,
                                              eastBlocksStart + site + 1);
         data.exactDiag = completeED;
         for(int site = skips, end = lEFinal - 1; site < end; site++,
@@ -171,6 +173,7 @@ int main()
             psiGround = randomSeed(westBlocks[site], eastBlocks[site]);
             westBlocks[site + 1]
                 = westBlocks[site].nextBlock(data, psiGround,
+                                             cumulativeTruncationError,
                                              eastBlocksStart + site + 1);
         };
         if(oddSize)
@@ -179,9 +182,13 @@ int main()
             data.infiniteStage = false; // no longer any need to create hEprime
             psiGround = randomSeed(westBlocks[lSFinal - 2],
                                    eastBlocks[lSFinal - 2]);
-            westBlocks[lSFinal - 1] = westBlocks[lSFinal - 2]
-                                      .nextBlock(data, psiGround);
+            westBlocks[lSFinal - 1]
+                = westBlocks[lSFinal - 2].nextBlock(data, psiGround,
+                                                    cumulativeTruncationError);
         };
+        std::cout << "iDMRG average truncation error: "
+                  << cumulativeTruncationError / (lSys - lSys / 2 - 1)
+                  << std::endl;       // handles both even and odd system sizes
         if(completeED || nSweeps == 0)
             psiGround = randomSeed(westBlocks[lSFinal - 1],
                                    eastBlocks[lEFinal - 1]);
@@ -199,10 +206,12 @@ int main()
                 data.lancTolerance = groundStateErrorTolerances[sweep]
                                      * groundStateErrorTolerances[sweep] / 2;
                 data.beforeCompBlock = data.compBlock - 1;
+                cumulativeTruncationError = 0.;
                 for(int site = lSFinal - 1; site < endSweep;
                     site++, data.compBlock--, data.beforeCompBlock--)
-                    westBlocks[site + 1] = westBlocks[site].nextBlock(data,
-                                                                      psiGround);
+                    westBlocks[site + 1]
+                        = westBlocks[site].nextBlock(data, psiGround,
+                                                     cumulativeTruncationError);
                 reflectPredictedPsi(psiGround, westBlocks[endSweep],
                                     eastBlocks[skips]);
                                // reflect the system to reverse sweep direction
@@ -211,8 +220,9 @@ int main()
                 data.beforeCompBlock = data.compBlock - 1;
                 for(int site = skips; site < endSweep;
                     site++, data.compBlock--, data.beforeCompBlock--)
-                    eastBlocks[site + 1] = eastBlocks[site].nextBlock(data,
-                                                                      psiGround);
+                    eastBlocks[site + 1]
+                        = eastBlocks[site].nextBlock(data, psiGround,
+                                                     cumulativeTruncationError);
                 reflectPredictedPsi(psiGround, eastBlocks[endSweep],
                                     westBlocks[skips]);
                 data.sweepingEast = true;
@@ -220,9 +230,13 @@ int main()
                 data.beforeCompBlock = data.compBlock - 1;
                 for(int site = skips, end = lSFinal - 1; site < end;
                     site++, data.compBlock--, data.beforeCompBlock--)
-                    westBlocks[site + 1] = westBlocks[site].nextBlock(data,
-                                                                      psiGround);
-                std::cout << "Sweep " << sweep << " complete." << std::endl;
+                    westBlocks[site + 1]
+                        = westBlocks[site].nextBlock(data, psiGround,
+                                                     cumulativeTruncationError);
+                std::cout << "Sweep " << sweep
+                          << " complete. Average truncation error: "
+                          << cumulativeTruncationError / (2 * lSys - 4)
+                          << std::endl;
             };
         };
         data.compBlock = eastBlocksStart + (lEFinal - 1);

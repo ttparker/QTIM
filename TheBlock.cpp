@@ -16,6 +16,7 @@ TheBlock::TheBlock(const Hamiltonian& ham, bool westSide)
 };
 
 TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround,
+                             double& cumulativeTruncationError,
                              TheBlock* nextCompBlock)
 {
     matPair hPrimes = createHprimes(data);
@@ -62,6 +63,8 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround,
                       << "eigenspace, lowering cutoff to " << evecsToKeep
                       << " states." << std::endl;
     };
+    cumulativeTruncationError
+        += rhoSolver.eigenvalues().head(md - evecsToKeep).sum();
     primeToRhoBasis = rhoSolver.eigenvectors().rightCols(evecsToKeep);
                                      // construct system change-of-basis matrix
     if(data.infiniteStage)

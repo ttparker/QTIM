@@ -32,6 +32,7 @@ class TheBlock
                  int l = 0);
         TheBlock(const Hamiltonian& ham, bool westSide);
         TheBlock nextBlock(const stepData& data, rmMatrixX_t& psiGround,
+                           double& cumulativeTruncationError,
                            TheBlock* nextCompBlock = NULL);
                                                      // performs each DMRG step
         FinalSuperblock createHSuperFinal(const stepData& data,
