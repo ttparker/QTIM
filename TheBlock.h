@@ -29,7 +29,8 @@ class TheBlock
                  const std::vector<MatrixX_t>& rhoBasisH2
                      = std::vector<MatrixX_t>());
         TheBlock(const Hamiltonian& ham);
-        TheBlock nextBlock(const stepData& data, rmMatrixX_t& psiGround);
+        TheBlock nextBlock(const stepData& data, rmMatrixX_t& psiGround,
+                           double& cumulativeTruncationError);
                                                      // performs each DMRG step
         FinalSuperblock createHSuperFinal(const stepData& data,
                                           rmMatrixX_t& psiGround,

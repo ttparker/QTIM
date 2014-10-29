@@ -13,7 +13,8 @@ TheBlock::TheBlock(const Hamiltonian& ham) : m(d), hS(ham.h1)
                       ham.siteBasisH2.begin() + nIndepCouplingOperators);
 };
 
-TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
+TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround,
+                             double& cumulativeTruncationError)
 {
     MatrixX_t hSprime = createHprime(this, data.ham);  // expanded system block
     int md = m * d;
@@ -52,6 +53,8 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                       << "eigenspace, lowering cutoff to " << evecsToKeep
                       << " states." << std::endl;
     };
+    cumulativeTruncationError
+        += rhoSolver.eigenvalues().head(md - evecsToKeep).sum();
     primeToRhoBasis = rhoSolver.eigenvectors().rightCols(evecsToKeep);
                                             // construct change-of-basis matrix
     if(!data.infiniteStage) // modify psiGround to predict the next ground state
