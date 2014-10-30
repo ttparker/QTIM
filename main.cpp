@@ -179,7 +179,6 @@ int main()
         if(oddSize)
         {
             data.compBlock = eastBlocksStart + (lSFinal - 2);
-            data.infiniteStage = false; // no longer any need to create hEprime
             psiGround = randomSeed(westBlocks[lSFinal - 2],
                                    eastBlocks[lSFinal - 2]);
             westBlocks[lSFinal - 1]

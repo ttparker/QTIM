@@ -74,11 +74,14 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround,
         data.compBlock -> primeToRhoBasis
             = rhoSolver.eigenvectors().rightCols(data.mMax);
                                 // construct environment change-of-basis matrix
-        *nextCompBlock = TheBlock(data.mMax,
-                                  changeBasis(hPrimes.second, data.compBlock),
-                                  createNewRhoBasisH2s(data.ham.siteBasisH2,
-                                                       false, data.compBlock),
-                                  l + 1);
+        if(nextCompBlock)           // excludes last odd-system-size iDMRG step
+            *nextCompBlock = TheBlock(data.mMax,
+                                      changeBasis(hPrimes.second,
+                                                  data.compBlock),
+                                      createNewRhoBasisH2s(data.ham.siteBasisH2,
+                                                           false,
+                                                           data.compBlock),
+                                      l + 1);
     }
     else                   // modify psiGround to predict the next ground state
     {
