@@ -5,7 +5,6 @@
 #define Id_d Matrix<double, d, d>::Identity()       // one-site identity matrix
 
 class FinalSuperblock;
-class TheBlock;
 
 struct stepData
 {
@@ -22,38 +21,37 @@ struct stepData
 class TheBlock
 {
     public:
-        int m;                              // number of states stored in block
-        MatrixX_t primeToRhoBasis;                    // change-of-basis matrix
+        effectiveHams blockParts; // stores effective Hamiltonians for this site
+        rmMatrixX_t primeToRhoBasis;                  // change-of-basis matrix
         
-        TheBlock(int m = 0, const MatrixX_t& hS = MatrixX_t(),
-                 const std::vector<MatrixX_t>& rhoBasisH2
-                     = std::vector<MatrixX_t>());
+        TheBlock() {};
         TheBlock(const Hamiltonian& ham);
+        TheBlock(const effectiveHams& blockParts);
         TheBlock nextBlock(const stepData& data, rmMatrixX_t& psiGround,
                            double& cumulativeTruncationError);
                                                      // performs each DMRG step
+        rmMatrixX_t projectNNCoupling(const rmMatrixX_t& blockOp,
+                                      const rmMatrixX_t& siteOp);
+                  // projects term coupling system block to left-hand free site
         FinalSuperblock createHSuperFinal(const stepData& data,
                                           rmMatrixX_t& psiGround,
                                           int lSys, int skips) const;
-        obsMatrixX_t obsChangeBasis(const obsMatrixX_t& mat) const;
-                       // changes basis during calculation of observables stage
+        obsMatrixX_t obsProjectBlockOp(const obsMatrixX_t& sysOp),
+                      // projects any block op except for (the one at the inner
+                      // end IF there is an op at the adjacent free site)
+        #ifdef differentScalars
+                     obsProjectNNCoupling(const obsMatrixX_t& blockOp,
+                                          const obsMatrixX_t& siteOp),
+                   // identical to member function above except for return type
+        #endif
+                     obsProjectFreeSiteOp(const obsMatrixD_t& lFreeSite);
+                      // projects op at free site that isn't next to a block op
     
     private:
-        MatrixX_t hS;                                      // block Hamiltonian
-        std::vector<MatrixX_t> rhoBasisH2;
-                                     // density-matrix-basis coupling operators
-        
-        MatrixX_t createHprime(const TheBlock* block, const Hamiltonian& ham)
-            const;
-        std::vector<MatrixX_t> createNewRhoBasisH2(const vecMatD_t& siteBasisH2,
-                                                   bool exactDiag) const;
-        double lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
-                       double lancTolerance) const,
+        double lanczos(const Hamiltonian& ham,
+                       const effectiveHams& compBlockParts,
+                       rmMatrixX_t& seed, double lancTolerance) const;
      // changes input seed to ground eigenvector - make sure seed is normalized
-               solveHSuper(const MatrixX_t& hSprime, const stepData& data,
-                           rmMatrixX_t& psiGround) const;
-        MatrixX_t changeBasis(const MatrixX_t& mat) const;
-                   // represents operators in the basis of the new system block
 };
 
 #endif

@@ -19,20 +19,19 @@ extern "C"
 
 using namespace Eigen;
 
-double TheBlock::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
-                         double lancTolerance) const
+double TheBlock::lanczos(const Hamiltonian& ham,
+                         const effectiveHams& compBlockParts,
+                         rmMatrixX_t& seed, double lancTolerance) const
 {
-    int matSize = mat.rows();
-    if(matSize == 1)
-        return re(mat(0, 0));
-    const int minIters = std::min(matSize, globalMinLancIters),
-              maxIters = std::min(matSize, globalMaxLancIters);
+    int hamDimension = blockParts.m * d * compBlockParts.m * d;
+    const int minIters = std::min(hamDimension, globalMinLancIters),
+              maxIters = std::min(hamDimension, globalMaxLancIters);
     std::vector<double> a,
                         b;
     a.reserve(minIters);
     b.reserve(minIters);
     MatrixX_t basisVecs = seed;
-    VectorX_t x = mat * basisVecs;
+    VectorX_t x = ham.act(blockParts, compBlockParts, basisVecs);
     a.push_back(re(seed.col(0).dot(x)));
     b.push_back(0.);
     VectorX_t oldGS;
@@ -75,7 +74,8 @@ double TheBlock::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
         b.push_back(x.norm());
         basisVecs.conservativeResize(NoChange, i + 1);
         basisVecs.col(i) = x / b[i];
-        x.noalias() = mat * basisVecs.col(i) - b[i] * basisVecs.col(i - 1);
+        x.noalias() =   ham.act(blockParts, compBlockParts, basisVecs.col(i))
+                      - b[i] * basisVecs.col(i - 1);
         a.push_back(re(basisVecs.col(i).dot(x)));
         
         // Lanczos stage 2: diagonalize tridiagonal matrix
@@ -105,9 +105,10 @@ double TheBlock::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
     if(N == maxIters && gStateDiff > lancTolerance)
                           // check if last iteration converges to an eigenstate
     {
-        double gStateError = std::abs(1 - std::abs(seed.col(0)
-                                                   .dot((mat * seed).col(0)
-                                                        .normalized())));
+        double gStateError
+            = std::abs(1 - std::abs(seed.col(0)
+                                    .dot(ham.act(blockParts, compBlockParts,
+                                                 seed).normalized())));
         std::cout << "Warning: final Lanczos iteration reached. The inner "
                   << "product of the final approximate ground state and its "
                   << "normalized image differs from 1 by " << gStateError

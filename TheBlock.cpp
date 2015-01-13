@@ -3,27 +3,42 @@
 
 using namespace Eigen;
 
-TheBlock::TheBlock(int m, const MatrixX_t& hS,
-                   const std::vector<MatrixX_t>& rhoBasisH2)
-                   : m(m), hS(hS), rhoBasisH2(rhoBasisH2) {};
-
-TheBlock::TheBlock(const Hamiltonian& ham) : m(d), hS(ham.h1)
+TheBlock::TheBlock(const Hamiltonian& ham)
 {
-    rhoBasisH2.assign(ham.siteBasisH2.begin(),
-                      ham.siteBasisH2.begin() + nIndepCouplingOperators);
+    blockParts.m = d;
+    blockParts.hS = ham.h1;
+    blockParts.rhoBasisH2
+        .assign(ham.siteBasisH2.begin(),
+                ham.siteBasisH2.begin() + nIndepCouplingOperators);
 };
+
+TheBlock::TheBlock(const effectiveHams& blockParts) : blockParts(blockParts) {};
 
 TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround,
                              double& cumulativeTruncationError)
 {
-    MatrixX_t hSprime = createHprime(this, data.ham);  // expanded system block
-    int md = m * d;
+    int md = blockParts.m * d;
     if(data.exactDiag)
-        return TheBlock(md, hSprime, createNewRhoBasisH2(data.ham.siteBasisH2,
-                                                         true));
+    {
+        effectiveHams newBlockParts;
+        newBlockParts.m = md;
+        newBlockParts.hS =   kp(blockParts.hS, Id_d)
+                           + data.ham.EDNNCoupling(blockParts.rhoBasisH2)
+                           + kp(MatrixXd::Identity(blockParts.m, blockParts.m),
+                                data.ham.h1);
+        newBlockParts.rhoBasisH2.reserve(nIndepCouplingOperators);
+        for(auto op = data.ham.siteBasisH2.begin(), end = op + nIndepCouplingOperators;
+            op != end; op++)
+            newBlockParts.rhoBasisH2
+                .push_back(kp(MatrixXd::Identity(blockParts.m, blockParts.m),
+                              *op));
+        return TheBlock(newBlockParts);
       // if near edge of system, no truncation necessary so skip DMRG algorithm
-    solveHSuper(hSprime, data, psiGround);            // calculate ground state
-    int compm = data.compBlock -> m;
+    };
+    lanczos(data.ham,
+            data.infiniteStage ? blockParts : data.compBlock -> blockParts,
+            psiGround, data.lancTolerance);           // calculate ground state
+    int compm = data.compBlock -> blockParts.m;
     psiGround.resize(md, compm * d);
     SelfAdjointEigenSolver<MatrixX_t> rhoSolver(psiGround * psiGround.adjoint());
                                              // find density matrix eigenstates
@@ -73,64 +88,99 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround,
         psiGround.resize(evecsToKeep * d, compm);
         psiGround *= data.beforeCompBlock -> primeToRhoBasis.transpose();
                                           // change the environment block basis
-        psiGround.resize(evecsToKeep * d * data.beforeCompBlock -> m * d, 1);
+        psiGround.resize(evecsToKeep * d
+                         * data.beforeCompBlock -> blockParts.m * d, 1);
     };
-    return TheBlock(evecsToKeep, changeBasis(hSprime),
-                    createNewRhoBasisH2(data.ham.siteBasisH2, false));
-                                  // save expanded-block operators in new basis
+    effectiveHams newBlockParts;
+    newBlockParts.m = evecsToKeep;
+    
+    // project expanded system block down to highest-weighted DM eigenbasis:
+    primeToRhoBasis.resize(blockParts.m, d * evecsToKeep);
+    rmMatrixX_t oSO = blockParts.hS * primeToRhoBasis;
+    oSO.resize(blockParts.m * d, evecsToKeep);
+    primeToRhoBasis.resize(blockParts.m * d, evecsToKeep);
+    newBlockParts.hS.noalias() = primeToRhoBasis.adjoint() * oSO;
+                                                           // system block term
+    newBlockParts.hS.noalias() += data.ham.NNCoupling(this);   // coupling term
+    rmMatrixX_t oDag = primeToRhoBasis.adjoint();
+    oDag.resize(evecsToKeep * blockParts.m, d);
+    rmMatrixX_t oDagH1 = oDag * data.ham.h1;
+    oDagH1.resize(evecsToKeep, blockParts.m * d);
+    newBlockParts.hS.noalias() += oDagH1 * primeToRhoBasis;   // free site term
+    
+    // project coupling operators into new DM eigenspace basis:
+    newBlockParts.rhoBasisH2.reserve(nIndepCouplingOperators);
+    for(auto op = data.ham.siteBasisH2.begin(),
+             end = op + nIndepCouplingOperators; op != end; op++)
+    {
+        rmMatrixX_t reshapedODag = primeToRhoBasis.adjoint();
+        reshapedODag.resize(evecsToKeep * blockParts.m, d);
+        rmMatrixX_t oDagH2 = reshapedODag * *op;
+        oDagH2.resize(evecsToKeep, blockParts.m * d);
+        newBlockParts.rhoBasisH2.push_back(oDagH2 * primeToRhoBasis);
+    };
+    return TheBlock(newBlockParts); // save expanded-block operators in new basis
 };
 
-MatrixX_t TheBlock::createHprime(const TheBlock* block, const Hamiltonian& ham)
-    const
+rmMatrixX_t TheBlock::projectNNCoupling(const rmMatrixX_t& blockOp,
+                                        const rmMatrixX_t& siteOp)
 {
-    return kp(block -> hS, Id_d)
-           + ham.blockSiteJoin(block -> rhoBasisH2)
-           + kp(Id(block -> m), ham.h1);
-};
-
-std::vector<MatrixX_t> TheBlock::createNewRhoBasisH2(const vecMatD_t& siteBasisH2,
-                                                     bool exactDiag) const
-{
-    std::vector<MatrixX_t> newRhoBasisH2;
-    newRhoBasisH2.reserve(nIndepCouplingOperators);
-    for(auto op = siteBasisH2.begin(), end = op + nIndepCouplingOperators;
-        op != end; op++)
-        newRhoBasisH2.push_back(exactDiag ?
-                                kp(Id(m), *op) :
-                                changeBasis(kp(Id(m), *op)));
-    return newRhoBasisH2;
-};
-
-double TheBlock::solveHSuper(const MatrixX_t& hSprime, const stepData& data,
-                             rmMatrixX_t& psiGround) const
-{
-    MatrixX_t hEprime = (data.infiniteStage ?
-                         hSprime :
-                         createHprime(data.compBlock, data.ham));
-                                                  // expanded environment block
-    MatrixX_t hSuper = kp(hSprime, Id(data.compBlock -> m * d))
-                       + data.ham.siteSiteJoin(m, data.compBlock -> m)
-                       + kp(Id(m * d), hEprime);
-    return lanczos(hSuper, psiGround, data.lancTolerance);
-};
-
-MatrixX_t TheBlock::changeBasis(const MatrixX_t& mat) const
-{
-    return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
+    int nextSiteM = primeToRhoBasis.cols();
+    rmMatrixX_t oDag = primeToRhoBasis.adjoint();
+    oDag.resize(nextSiteM * blockParts.m, d);
+    primeToRhoBasis.resize(blockParts.m, d * nextSiteM);
+    rmMatrixX_t oDagHSite = oDag * siteOp,
+                hSysO = blockOp * primeToRhoBasis;
+    primeToRhoBasis.resize(blockParts.m * d, nextSiteM);
+    oDagHSite.resize(nextSiteM, blockParts.m * d);
+    hSysO.resize(blockParts.m * d, nextSiteM);
+    return oDagHSite * hSysO;
 };
 
 FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
                                             rmMatrixX_t& psiGround, int lSys,
                                             int skips) const
 {
-    MatrixX_t hSprime = createHprime(this, data.ham);  // expanded system block
-    double gsEnergy = solveHSuper(hSprime, data, psiGround);
-                                                      // calculate ground state
-    return FinalSuperblock(gsEnergy, lSys, psiGround, m, data.compBlock -> m,
-                           skips);
+    double gsEnergy = lanczos(data.ham, data.compBlock -> blockParts, psiGround,
+                              data.lancTolerance);    // calculate ground state
+    return FinalSuperblock(gsEnergy, lSys, psiGround, blockParts.m,
+                           data.compBlock -> blockParts.m, skips);
 };
 
-obsMatrixX_t TheBlock::obsChangeBasis(const obsMatrixX_t& mat) const
+obsMatrixX_t TheBlock::obsProjectBlockOp(const obsMatrixX_t& sysOp)
 {
-    return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
+    int nextSiteM = primeToRhoBasis.cols();
+    primeToRhoBasis.resize(blockParts.m, d * nextSiteM);
+    obsMatrixX_t oSO = sysOp * primeToRhoBasis;
+    oSO.resize(blockParts.m * d, nextSiteM);
+    primeToRhoBasis.resize(blockParts.m * d, nextSiteM);
+    return primeToRhoBasis.adjoint() * oSO;
+};
+
+#ifdef differentScalars
+obsMatrixX_t TheBlock::obsProjectBlockFreeSiteOps(const obsMatrixX_t& blockOp,
+                                                  const obsMatrixX_t& siteOp)
+{
+    int nextSiteM = primeToRhoBasis.cols();
+    rmMatrixX_t oDag = primeToRhoBasis.adjoint();
+    oDag.resize(nextSiteM * blockParts.m, d);
+    primeToRhoBasis.resize(blockParts.m, d * nextSiteM);
+    obsMatrixX_t oDagHSite = oDag * siteOp,
+                 hSysO = blockOp * primeToRhoBasis;
+    primeToRhoBasis.resize(blockParts.m * d, nextSiteM);
+    oDagHSite.resize(nextSiteM, blockParts.m * d);
+    hSysO.resize(blockParts.m * d, nextSiteM);
+    return oDagHSite * hSysO;
+};
+#endif
+
+obsMatrixX_t TheBlock::obsProjectFreeSiteOp(const obsMatrixD_t& lFreeSite)
+{
+    int nextSiteM = primeToRhoBasis.cols();
+    primeToRhoBasis.resize(blockParts.m * d, nextSiteM);
+    rmMatrixX_t oDag = primeToRhoBasis.adjoint();
+    oDag.resize(nextSiteM * blockParts.m, d);
+    obsMatrixX_t oDagH1 = oDag * lFreeSite;
+    oDagH1.resize(nextSiteM, blockParts.m * d);
+    return oDagH1 * primeToRhoBasis;
 };

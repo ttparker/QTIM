@@ -2,10 +2,15 @@
 #define HAMILTONIAN_H
 
 #include "main.h"
-#define kp kroneckerProduct
-#define Id(size) MatrixXd::Identity(size, size)
 
-typedef std::vector<MatrixD_t, Eigen::aligned_allocator<MatrixD_t>> vecMatD_t;
+struct effectiveHams       // each site's effective block and bond Hamiltonians
+{
+    int m;                                  // number of states stored in block
+    rmMatrixX_t hS;                                        // block Hamiltonian
+    std::vector<MatrixX_t> rhoBasisH2; // density-matrix-basis coupling operators
+};
+
+class TheBlock;
 
 class Hamiltonian
 {
@@ -17,13 +22,17 @@ class Hamiltonian
     
     private:
         std::vector<double> couplingConstants;
-        vecMatD_t siteBasisH2;                 // site-basis coupling operators
+        std::vector<MatrixD_t, Eigen::aligned_allocator<MatrixD_t>> siteBasisH2;
+                                               // site-basis coupling operators
         MatrixD_t h1;                                // single-site Hamiltonian
         
-        MatrixX_t blockSiteJoin(const std::vector<MatrixX_t>& rhoBasisH2) const,
-                                           // appends free site to system block
-                  siteSiteJoin(int m, int compm) const;
-                                           // joins the two free sites together
+        rmMatrixX_t EDNNCoupling(const std::vector<MatrixX_t>& rhoBasisH2) const;
+        Eigen::Matrix<hamScalar, Eigen::Dynamic, 1>
+            act(const effectiveHams& blockParts,
+                const effectiveHams& compBlockParts, rmMatrixX_t x) const;
+        rmMatrixX_t NNCoupling(TheBlock * block) const;
+                                    // specify the block-adjacent-free-site
+                                    // couplings to be projected into new basis
     
     friend class TheBlock;
 };
