@@ -48,12 +48,13 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround,
     else
     {
         int firstKeptEval = md - data.mMax;
-        for(double currentFirstEval = rhoSolver.eigenvalues()(firstKeptEval);
-            firstKeptEval < md
-            && (currentFirstEval == 0
-                || (currentFirstEval - rhoSolver.eigenvalues()(firstKeptEval - 1))
-                   / std::abs(currentFirstEval) < degenerateDMCutoff);
-            firstKeptEval++);
+        for(; firstKeptEval < md
+              && (rhoSolver.eigenvalues()(firstKeptEval) == 0
+                  ||   (  rhoSolver.eigenvalues()(firstKeptEval)
+                        - rhoSolver.eigenvalues()(firstKeptEval - 1))
+                       / std::abs(rhoSolver.eigenvalues()(firstKeptEval))
+                     < degenerateDMCutoff);
+              firstKeptEval++);
               // find the the max number of eigenvectors to keep that do not
               // terminate inside a degenerate eigenspace of the density matrix
         evecsToKeep = md - firstKeptEval;
