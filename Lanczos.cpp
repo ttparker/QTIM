@@ -3,7 +3,6 @@
 
 #ifdef realHamiltonian
     #define re
-    #include <cmath>
 #endif
 #ifdef complexHamiltonian
     #define re std::real
