@@ -17,8 +17,8 @@ class FinalSuperblock
         FinalSuperblock(double gsEnergy, int lSupFinal,
                         const rmMatrixX_t& psiGround,
                         int mSFinal, int mEFinal, int skips);
-        double expValue(const opsVec& ops, std::vector<TheBlock>& leftBlocks,
-                        std::vector<TheBlock>& rightBlocks);
+        double expValue(const opsVec& ops, std::vector<TheBlock>& westBlocks,
+                        std::vector<TheBlock>& eastBlocks);
       // calculates expectation value of a combination of single-site operators
     
     private:
@@ -38,8 +38,9 @@ class FinalSuperblock
                      rFreeSite;
 
         void placeOp(const std::pair<obsMatrixD_t, int>& op, opsMap& blockSide,
-                     bool systemSide);
+                     bool systemSide),
                     // assign each one-site observable to the appropriate block
+             reshapePsiGround();                   // back into a column vector
         obsVectorX_t actSysBlock(std::vector<TheBlock>& leftBlocks),
                                     // act the system block on the ground state
                      actLFreeSite(),
