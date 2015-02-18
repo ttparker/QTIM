@@ -16,14 +16,14 @@ using namespace Eigen;
 Hamiltonian::Hamiltonian()
 {
     siteBasisH2.resize(nCouplingOperators);
-    hSiteBond << 0., 1.,
-                 1., 0.;
+    hSiteBond << 0., .5,
+                 .5, 0.;
 };
 
 void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn)
 {
-    h1 << -h, 0.,
-          0.,  h;
+    h1 << -h / 2,    0.,
+              0., h / 2;
     couplingConstants = {couplingConstantsIn[0]};
 };
 
